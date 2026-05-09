@@ -493,6 +493,61 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;
   border:1px solid var(--border2);font-weight:600;
 }
 
+/* ── 편집 버튼 ── */
+.task-edit{
+  width:22px;height:22px;border-radius:4px;
+  border:none;background:transparent;color:var(--text3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:all .15s;flex-shrink:0;
+}
+.task-edit:hover{background:var(--blue-pale);color:var(--blue-main);}
+
+/* 편집 모달 */
+.edit-overlay{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(13,31,78,.5);
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(2px);animation:fadeIn .15s ease;
+}
+.edit-box{
+  background:var(--surface);border-radius:var(--radius);
+  width:440px;max-width:95vw;
+  box-shadow:var(--shadow-md);
+  border:1px solid var(--border);
+  overflow:hidden;animation:popIn .18s ease;
+}
+.edit-head{
+  padding:14px 18px;
+  background:linear-gradient(135deg,var(--blue-main),var(--blue-deep));
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid var(--blue-mid);
+}
+.edit-title{font-size:14px;font-weight:700;color:#fff;font-family:'Montserrat',sans-serif;}
+.edit-body{padding:18px;}
+.edit-field{margin-bottom:14px;}
+.edit-label{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.edit-input{
+  width:100%;padding:8px 10px;
+  border:1.5px solid var(--border2);border-radius:var(--radius-sm);
+  font-size:13px;font-family:'Noto Sans KR',sans-serif;
+  color:var(--text);background:var(--bg);
+  transition:border-color .15s;
+}
+.edit-input:focus{outline:none;border-color:var(--blue-main);}
+.edit-row{display:flex;gap:10px;}
+.edit-foot{display:flex;justify-content:flex-end;gap:8px;padding-top:4px;}
+
+/* 색상 선택 팔레트 */
+.color-palette{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+.color-dot{
+  width:22px;height:22px;border-radius:50%;
+  cursor:pointer;border:2px solid transparent;
+  transition:all .15s;flex-shrink:0;
+}
+.color-dot:hover{transform:scale(1.2);}
+.color-dot.selected{border-color:var(--blue-dark);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--blue-dark);}
+.color-dot.none{background:#E2E8F0;border:2px dashed var(--border2);}
+
 /* ── 캘린더 ── */
 #cal-wrap .fc{font-family:'Noto Sans KR',sans-serif;font-size:12px;}
 #cal-wrap .fc-theme-standard td,#cal-wrap .fc-theme-standard th,#cal-wrap .fc-theme-standard .fc-scrollgrid{border-color:var(--border)!important;}
@@ -636,6 +691,53 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;
     <button class="chat-btn" onclick="parseChat()">업무 등록</button>
   </div>
 
+</div>
+
+<!-- 편집 모달 -->
+<div class="edit-overlay" id="editModal" style="display:none;" onclick="closeEditModal(event)">
+  <div class="edit-box" onclick="event.stopPropagation()">
+    <div class="edit-head">
+      <span class="edit-title">업무 수정</span>
+      <button class="modal-close" onclick="document.getElementById('editModal').style.display='none'">✕</button>
+    </div>
+    <div class="edit-body">
+      <div class="edit-field">
+        <div class="edit-label">업무 내용</div>
+        <input class="edit-input" id="editText" placeholder="업무 내용"/>
+      </div>
+      <div class="edit-row">
+        <div class="edit-field" style="flex:1;">
+          <div class="edit-label">시작일 (기간 업무만)</div>
+          <input type="date" class="edit-input" id="editStartDate"/>
+        </div>
+        <div class="edit-field" style="flex:1;">
+          <div class="edit-label">마감일</div>
+          <input type="date" class="edit-input" id="editDate"/>
+        </div>
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">색상</div>
+        <div class="color-palette" id="editColorPalette">
+          <div class="color-dot none selected" data-color="" title="없음" onclick="selectEditColor(this,'')"></div>
+          <div class="color-dot" style="background:#E53E3E" data-color="#E53E3E" title="빨강" onclick="selectEditColor(this,'#E53E3E')"></div>
+          <div class="color-dot" style="background:#F97316" data-color="#F97316" title="주황" onclick="selectEditColor(this,'#F97316')"></div>
+          <div class="color-dot" style="background:#D69E2E" data-color="#D69E2E" title="노랑" onclick="selectEditColor(this,'#D69E2E')"></div>
+          <div class="color-dot" style="background:#38A169" data-color="#38A169" title="초록" onclick="selectEditColor(this,'#38A169')"></div>
+          <div class="color-dot" style="background:#2351c5" data-color="#2351c5" title="파랑" onclick="selectEditColor(this,'#2351c5')"></div>
+          <div class="color-dot" style="background:#3B82F6" data-color="#3B82F6" title="하늘" onclick="selectEditColor(this,'#3B82F6')"></div>
+          <div class="color-dot" style="background:#1A3A8F" data-color="#1A3A8F" title="남색" onclick="selectEditColor(this,'#1A3A8F')"></div>
+          <div class="color-dot" style="background:#7F77DD" data-color="#7F77DD" title="보라" onclick="selectEditColor(this,'#7F77DD')"></div>
+          <div class="color-dot" style="background:#718096" data-color="#718096" title="회색" onclick="selectEditColor(this,'#718096')"></div>
+          <div class="color-dot" style="background:#E2E8F0;border:1.5px solid #CBD5E0" data-color="#E2E8F0" title="흰색" onclick="selectEditColor(this,'#E2E8F0')"></div>
+          <div class="color-dot" style="background:#2D3748" data-color="#2D3748" title="검정" onclick="selectEditColor(this,'#2D3748')"></div>
+        </div>
+      </div>
+      <div class="edit-foot">
+        <button class="btn btn-ghost" onclick="document.getElementById('editModal').style.display='none'">취소</button>
+        <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 업무 모달 -->
@@ -891,6 +993,7 @@ function renderDash(){
       </div>
       ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;margin-right:4px;"></span>`:''}
       <span class="task-date ${ov?'overdue':''}">${ov?'⚠ 지연 ':''}${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
+      <button class="task-edit" onclick="openEdit('${t.id}','dash')" title="수정">✎</button>
       <button class="task-del" onclick="toggleT('${t.id}');renderDash();">✓</button>
     </div>`;
   }).join('');
@@ -994,6 +1097,7 @@ function renderMList(){
     ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;"></span>`:''}
     <div class="task-txt ${t.done?'done':''}" style="flex:1;">${t.text}</div>
     <span class="task-date ${!t.done&&t.date<today?'overdue':''}">${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
+    <button class="task-edit" onclick="openEdit('${t.id}','modal')" title="수정">✎</button>
     <button class="task-del" onclick="delT('${t.id}');renderMList();if(cur==='org')renderOrg();">✕</button>
   </div>`).join('');
 }
@@ -1054,6 +1158,7 @@ function renderPers(){
     ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;"></span>`:''}
     <div class="task-txt ${t.done?'done':''}" style="flex:1;">${t.text}</div>
     <span class="task-date ${!t.done&&t.date<today?'overdue':''}">${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
+    <button class="task-edit" onclick="openEdit('${t.id}','pers')" title="수정">✎</button>
     <button class="task-del" onclick="delT('${t.id}');renderPers();updateBadges();">✕</button>
   </div>`).join('');
 }
@@ -1206,24 +1311,34 @@ function parseChat(){
   if(!text){ toast('업무 내용을 입력해주세요', 'error'); return; }
 
   /* ── STEP 5. 색상 추출 ── */
-  const COLOR_MAP = {
-    '빨강':'#E53E3E','빨간':'#E53E3E',
-    '주황':'#F97316',
-    '노랑':'#D69E2E','노란':'#D69E2E',
-    '초록':'#38A169','녹색':'#38A169',
-    '파랑':'#2351c5','파란':'#2351c5','하늘':'#3B82F6',
-    '남색':'#1A3A8F','남':'#1A3A8F',
-    '보라':'#7F77DD','보라색':'#7F77DD',
-    '회색':'#718096','회':'#718096',
-    '흰색':'#E2E8F0','하얀':'#E2E8F0','흰':'#E2E8F0',
-    '검정':'#2D3748','검은':'#2D3748','블랙':'#2D3748',
-  };
+  const COLOR_MAP = [
+    {kw:'빨강',   hex:'#E53E3E'},
+    {kw:'빨간',   hex:'#E53E3E'},
+    {kw:'주황',   hex:'#F97316'},
+    {kw:'노랑',   hex:'#D69E2E'},
+    {kw:'노란',   hex:'#D69E2E'},
+    {kw:'초록',   hex:'#38A169'},
+    {kw:'녹색',   hex:'#38A169'},
+    {kw:'하늘',   hex:'#3B82F6'},
+    {kw:'파랑',   hex:'#2351c5'},
+    {kw:'파란',   hex:'#2351c5'},
+    {kw:'남색',   hex:'#1A3A8F'},
+    {kw:'보라색', hex:'#7F77DD'},
+    {kw:'보라',   hex:'#7F77DD'},
+    {kw:'회색',   hex:'#718096'},
+    {kw:'흰색',   hex:'#E2E8F0'},
+    {kw:'하얀',   hex:'#E2E8F0'},
+    {kw:'흰',     hex:'#E2E8F0'},
+    {kw:'검정',   hex:'#2D3748'},
+    {kw:'검은',   hex:'#2D3748'},
+    {kw:'블랙',   hex:'#2D3748'},
+  ];
   let taskColor = null;
-  for(const [kw, hex] of Object.entries(COLOR_MAP)){
-    const re = new RegExp(`(^|\s)${kw}(\s|$)`);
-    if(re.test(text)){
+  for(const {kw, hex} of COLOR_MAP){
+    // 텍스트 어디서든 색상 키워드 포함되면 추출 (앞뒤 공백/시작/끝 무관)
+    if(text.includes(kw)){
       taskColor = hex;
-      text = text.replace(re, ' ').trim();
+      text = text.split(kw).join('').replace(/\s+/g,' ').trim();
       break;
     }
   }
@@ -1255,6 +1370,66 @@ function updateBadges(){
   const pn=db.tasks.filter(t=>t.mid==='personal'&&!t.done).length;
   const pb=document.getElementById('persBadge');
   if(pn>0){pb.style.display='';pb.textContent=pn;}else pb.style.display='none';
+}
+
+/* ═══ 편집 ══════════════════════════════════════════════════ */
+let editId = null, editContext = null;
+
+function openEdit(id, context){
+  const t = db.tasks.find(x=>x.id===id);
+  if(!t) return;
+  editId = id;
+  editContext = context;
+  document.getElementById('editText').value = t.text || '';
+  document.getElementById('editDate').value = t.date || '';
+  document.getElementById('editStartDate').value = t.startDate || '';
+  // 색상 팔레트 초기화
+  document.querySelectorAll('#editColorPalette .color-dot').forEach(d=>{
+    d.classList.remove('selected');
+    if(d.dataset.color === (t.color||'')) d.classList.add('selected');
+  });
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function selectEditColor(el, color){
+  document.querySelectorAll('#editColorPalette .color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getSelectedEditColor(){
+  const sel = document.querySelector('#editColorPalette .color-dot.selected');
+  return sel ? sel.dataset.color : '';
+}
+
+function saveEdit(){
+  const t = db.tasks.find(x=>x.id===editId);
+  if(!t) return;
+  const text = document.getElementById('editText').value.trim();
+  const date = document.getElementById('editDate').value;
+  const startDate = document.getElementById('editStartDate').value;
+  const color = getSelectedEditColor();
+  if(!text){ toast('업무 내용을 입력해주세요','error'); return; }
+  if(!date){ toast('마감일을 입력해주세요','error'); return; }
+  t.text = text;
+  t.date = date;
+  if(startDate && startDate !== date) t.startDate = startDate;
+  else delete t.startDate;
+  if(color) t.color = color;
+  else delete t.color;
+  save();
+  document.getElementById('editModal').style.display = 'none';
+  toast('수정 완료!', 'success');
+  // 현재 화면 새로고침
+  if(editContext==='dash') renderDash();
+  else if(editContext==='pers') renderPers();
+  else if(editContext==='modal'){ renderMList(); if(cur==='org') renderOrg(); }
+  if(cur==='calendar') renderCal();
+  updateBadges();
+}
+
+function closeEditModal(e){
+  if(e.target===document.getElementById('editModal'))
+    document.getElementById('editModal').style.display='none';
 }
 
 /* ═══ 토스트 ════════════════════════════════════════════════ */
