@@ -1311,15 +1311,22 @@ function parseChat(){
   if(!text){ toast('업무 내용을 입력해주세요', 'error'); return; }
 
   /* ── STEP 5. 색상 추출 ── */
+  // 긴 키워드 먼저 (부분 매칭 방지)
   const COLOR_MAP = [
+    {kw:'빨간색', hex:'#E53E3E'},
     {kw:'빨강',   hex:'#E53E3E'},
     {kw:'빨간',   hex:'#E53E3E'},
+    {kw:'주황색', hex:'#F97316'},
     {kw:'주황',   hex:'#F97316'},
+    {kw:'노란색', hex:'#D69E2E'},
     {kw:'노랑',   hex:'#D69E2E'},
     {kw:'노란',   hex:'#D69E2E'},
+    {kw:'초록색', hex:'#38A169'},
     {kw:'초록',   hex:'#38A169'},
     {kw:'녹색',   hex:'#38A169'},
+    {kw:'하늘색', hex:'#3B82F6'},
     {kw:'하늘',   hex:'#3B82F6'},
+    {kw:'파란색', hex:'#2351c5'},
     {kw:'파랑',   hex:'#2351c5'},
     {kw:'파란',   hex:'#2351c5'},
     {kw:'남색',   hex:'#1A3A8F'},
@@ -1327,8 +1334,10 @@ function parseChat(){
     {kw:'보라',   hex:'#7F77DD'},
     {kw:'회색',   hex:'#718096'},
     {kw:'흰색',   hex:'#E2E8F0'},
+    {kw:'하얀색', hex:'#E2E8F0'},
     {kw:'하얀',   hex:'#E2E8F0'},
     {kw:'흰',     hex:'#E2E8F0'},
+    {kw:'검은색', hex:'#2D3748'},
     {kw:'검정',   hex:'#2D3748'},
     {kw:'검은',   hex:'#2D3748'},
     {kw:'블랙',   hex:'#2D3748'},
@@ -1441,6 +1450,38 @@ function toast(msg,type='info'){
 }
 
 /* ═══ 초기화 ════════════════════════════════════════════════ */
+
+// 기존 저장 데이터에 색상 키워드가 업무명에 남아있으면 자동 정리
+(function fixLegacyColors(){
+  const COLOR_MAP_LEGACY = [
+    {kw:'빨간색',hex:'#E53E3E'},{kw:'빨강',hex:'#E53E3E'},{kw:'빨간',hex:'#E53E3E'},
+    {kw:'주황색',hex:'#F97316'},{kw:'주황',hex:'#F97316'},
+    {kw:'노란색',hex:'#D69E2E'},{kw:'노랑',hex:'#D69E2E'},{kw:'노란',hex:'#D69E2E'},
+    {kw:'초록색',hex:'#38A169'},{kw:'초록',hex:'#38A169'},{kw:'녹색',hex:'#38A169'},
+    {kw:'하늘색',hex:'#3B82F6'},{kw:'하늘',hex:'#3B82F6'},
+    {kw:'파란색',hex:'#2351c5'},{kw:'파랑',hex:'#2351c5'},{kw:'파란',hex:'#2351c5'},
+    {kw:'남색',hex:'#1A3A8F'},
+    {kw:'보라색',hex:'#7F77DD'},{kw:'보라',hex:'#7F77DD'},
+    {kw:'회색',hex:'#718096'},
+    {kw:'흰색',hex:'#E2E8F0'},{kw:'하얀색',hex:'#E2E8F0'},{kw:'하얀',hex:'#E2E8F0'},{kw:'흰',hex:'#E2E8F0'},
+    {kw:'검은색',hex:'#2D3748'},{kw:'검정',hex:'#2D3748'},{kw:'검은',hex:'#2D3748'},{kw:'블랙',hex:'#2D3748'},
+  ];
+  let changed = false;
+  db.tasks.forEach(t=>{
+    if(!t.color){
+      for(const {kw,hex} of COLOR_MAP_LEGACY){
+        if(t.text && t.text.includes(kw)){
+          t.color = hex;
+          t.text = t.text.split(kw).join('').replace(/\s+/g,' ').trim();
+          changed = true;
+          break;
+        }
+      }
+    }
+  });
+  if(changed){ save(); console.log('레거시 색상 데이터 정리 완료'); }
+})();
+
 renderDash();updateBadges();
 </script>
 </body>
