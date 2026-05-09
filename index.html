@@ -632,10 +632,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;
 <div class="bottom-bar">
   <div class="chat-wrap">
     <span class="chat-pre">CMD</span>
-    <input class="chat-in" id="chatIn" placeholder="예: 신정우 내일 생산 보고서 작성 | 윤전 2025-07-10 점검 | 나 오늘 결재 올리기"/>
+    <input class="chat-in" id="chatIn" placeholder=""/>
     <button class="chat-btn" onclick="parseChat()">업무 등록</button>
   </div>
-  <div class="chat-hint">형식: 이름 또는 공정명 [날짜] 업무내용 — '오늘', '내일', '다음주' 또는 YYYY-MM-DD 인식</div>
+
 </div>
 
 <!-- 업무 모달 -->
@@ -889,6 +889,7 @@ function renderDash(){
         <div style="font-size:13px;font-weight:600;">${t.text}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m?m.name+(m.role?' · '+m.role:''):'개인'}</div>
       </div>
+      ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;margin-right:4px;"></span>`:''}
       <span class="task-date ${ov?'overdue':''}">${ov?'⚠ 지연 ':''}${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
       <button class="task-del" onclick="toggleT('${t.id}');renderDash();">✓</button>
     </div>`;
@@ -990,6 +991,7 @@ function renderMList(){
   if(!tasks.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0;">등록된 업무가 없습니다.</div>';return;}
   el.innerHTML=tasks.map(t=>`<div class="task-item">
     <input type="checkbox" class="task-chk" ${t.done?'checked':''} onchange="toggleT('${t.id}');renderMList();if(cur==='org')renderOrg();">
+    ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;"></span>`:''}
     <div class="task-txt ${t.done?'done':''}" style="flex:1;">${t.text}</div>
     <span class="task-date ${!t.done&&t.date<today?'overdue':''}">${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
     <button class="task-del" onclick="delT('${t.id}');renderMList();if(cur==='org')renderOrg();">✕</button>
@@ -1015,7 +1017,11 @@ function renderCal(){
     let col='#2351c5';
     const p=PROCESS_DATA.find(x=>x.id===t.mid);
     if(p)col=p.color;else if(m)col=getAvColor(t.mid);
-    const ev={id:t.id,title:(m?m.name+' ':'')+t.text,start:t.startDate||t.date,backgroundColor:col+(t.done?'88':'cc'),borderColor:col,textColor:'#fff'};
+    const evColor = t.color || col;
+    const bgColor = t.done ? evColor+'88' : evColor+'ee';
+    const brightColors = ['#E2E8F0','#D69E2E','#F97316'];
+    const txtColor = brightColors.includes(t.color) ? '#1A202C' : '#fff';
+    const ev={id:t.id,title:(m?m.name+' ':'')+t.text,start:t.startDate||t.date,backgroundColor:bgColor,borderColor:evColor,textColor:txtColor};
     if(t.startDate&&t.startDate!==t.date){
       const endD=new Date(t.date);endD.setDate(endD.getDate()+1);
       ev.end=endD.toISOString().slice(0,10);
@@ -1045,6 +1051,7 @@ function renderPers(){
   if(!tasks.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0;">해당 업무가 없습니다.</div>';return;}
   el.innerHTML=tasks.map(t=>`<div class="task-item">
     <input type="checkbox" class="task-chk" ${t.done?'checked':''} onchange="toggleT('${t.id}');renderPers();updateBadges();">
+    ${t.color?`<span style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;"></span>`:''}
     <div class="task-txt ${t.done?'done':''}" style="flex:1;">${t.text}</div>
     <span class="task-date ${!t.done&&t.date<today?'overdue':''}">${t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date}</span>
     <button class="task-del" onclick="delT('${t.id}');renderPers();updateBadges();">✕</button>
@@ -1198,16 +1205,40 @@ function parseChat(){
 
   if(!text){ toast('업무 내용을 입력해주세요', 'error'); return; }
 
-  /* ── STEP 5. 저장 ── */
+  /* ── STEP 5. 색상 추출 ── */
+  const COLOR_MAP = {
+    '빨강':'#E53E3E','빨간':'#E53E3E',
+    '주황':'#F97316',
+    '노랑':'#D69E2E','노란':'#D69E2E',
+    '초록':'#38A169','녹색':'#38A169',
+    '파랑':'#2351c5','파란':'#2351c5','하늘':'#3B82F6',
+    '남색':'#1A3A8F','남':'#1A3A8F',
+    '보라':'#7F77DD','보라색':'#7F77DD',
+    '회색':'#718096','회':'#718096',
+    '흰색':'#E2E8F0','하얀':'#E2E8F0','흰':'#E2E8F0',
+    '검정':'#2D3748','검은':'#2D3748','블랙':'#2D3748',
+  };
+  let taskColor = null;
+  for(const [kw, hex] of Object.entries(COLOR_MAP)){
+    const re = new RegExp(`(^|\s)${kw}(\s|$)`);
+    if(re.test(text)){
+      taskColor = hex;
+      text = text.replace(re, ' ').trim();
+      break;
+    }
+  }
+
+  /* ── STEP 6. 저장 ── */
   const task = {id:uid(), mid, text, date, done:false};
   if(startDate && startDate !== date) task.startDate = startDate;
+  if(taskColor) task.color = taskColor;
 
   db.tasks.push(task);
   save();
   document.getElementById('chatIn').value = '';
 
   const dateLabel = (startDate && startDate !== date) ? `${startDate} ~ ${date}` : date;
-  toast(`[${mName}] ${text} (${dateLabel}) 등록됨`, 'success');
+  const colorLabel = taskColor ? ` 🎨` : ''; toast(`[${mName}] ${text} (${dateLabel})${colorLabel} 등록됨`, 'success');
   updateBadges();
   if(cur==='dashboard') renderDash();
   if(cur==='org') renderOrg();
