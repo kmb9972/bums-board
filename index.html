@@ -1112,18 +1112,178 @@ function addModalTask(){
   updateBadges();toast('업무 추가됨','success');
 }
 
+/* ═══ 한국 공휴일 (2025~2027) ══════════════════════════════ */
+const HOLIDAYS = {
+  '2025-01-01':'신정','2025-01-28':'설날','2025-01-29':'설날','2025-01-30':'설날',
+  '2025-03-01':'삼일절','2025-05-05':'어린이날','2025-05-06':'대체공휴일',
+  '2025-06-06':'현충일','2025-08-15':'광복절',
+  '2025-10-03':'개천절','2025-10-05':'추석','2025-10-06':'추석','2025-10-07':'추석',
+  '2025-10-08':'대체공휴일','2025-10-09':'한글날',
+  '2025-12-25':'성탄절',
+  '2026-01-01':'신정','2026-01-28':'설날','2026-01-29':'설날','2026-01-30':'설날',
+  '2026-02-16':'대체공휴일',
+  '2026-03-01':'삼일절','2026-05-05':'어린이날',
+  '2026-05-24':'부처님오신날',
+  '2026-06-06':'현충일','2026-08-15':'광복절',
+  '2026-09-24':'추석','2026-09-25':'추석','2026-09-26':'추석',
+  '2026-10-03':'개천절','2026-10-09':'한글날',
+  '2026-12-25':'성탄절',
+  '2027-01-01':'신정','2027-01-15':'설날','2027-01-16':'설날','2027-01-17':'설날',
+  '2027-03-01':'삼일절','2027-05-05':'어린이날',
+  '2027-06-06':'현충일','2027-08-15':'광복절',
+  '2027-10-03':'개천절','2027-10-09':'한글날',
+  '2027-12-25':'성탄절',
+};
+
+/* ═══ 영업일 유틸리티 ════════════════════════════════════════ */
+function dateToStr(d){
+  return d.toISOString().slice(0,10);
+}
+function isBusinessDay(d){
+  const day = d.getDay(); // 0=일,6=토
+  if(day===0||day===6) return false;
+  return !HOLIDAYS[dateToStr(d)];
+}
+function getPreviousBusinessDay(d){
+  const dt = new Date(d);
+  dt.setDate(dt.getDate()-1);
+  while(!isBusinessDay(dt)) dt.setDate(dt.getDate()-1);
+  return dt;
+}
+function getNextBusinessDay(d){
+  const dt = new Date(d);
+  dt.setDate(dt.getDate()+1);
+  while(!isBusinessDay(dt)) dt.setDate(dt.getDate()+1);
+  return dt;
+}
+
+/* ═══ 고정 캘린더 이벤트 생성 ══════════════════════════════ */
+function getFixedEvents(year, month){
+  const events = [];
+  // 말일
+  const lastDay = new Date(year, month, 0); // month=1~12, 0일=말일
+  // 출금일 후보: 10, 17, 25, 말일
+  const withdrawDays = [10, 17, 25];
+
+  // ── 월급날 (25일 → 이전 영업일) ──
+  const salary25 = new Date(year, month-1, 25);
+  const salaryDay = isBusinessDay(salary25) ? salary25 : getPreviousBusinessDay(salary25);
+  const salaryStr = dateToStr(salaryDay);
+
+  // ── 출금일 10일 → 다음 영업일 ──
+  const w10raw = new Date(year, month-1, 10);
+  const w10 = isBusinessDay(w10raw) ? w10raw : getNextBusinessDay(w10raw);
+  const w10str = dateToStr(w10);
+
+  // ── 출금일 17일 → 다음 영업일 ──
+  const w17raw = new Date(year, month-1, 17);
+  const w17 = isBusinessDay(w17raw) ? w17raw : getNextBusinessDay(w17raw);
+  const w17str = dateToStr(w17);
+
+  // ── 출금일 25일 → 다음 영업일 ──
+  const w25raw = new Date(year, month-1, 25);
+  const w25 = isBusinessDay(w25raw) ? w25raw : getNextBusinessDay(w25raw);
+  const w25str = dateToStr(w25);
+
+  // ── 출금일 말일 → 이전 영업일 ──
+  const wLastDay = isBusinessDay(lastDay) ? lastDay : getPreviousBusinessDay(lastDay);
+  const wLastStr = dateToStr(wLastDay);
+
+  // 25일: 월급+출금 겹치면 합치기
+  // salaryStr(이전영업일)과 w25str(다음영업일)이 같을 수도 있음
+  // 월급날 이벤트
+  if(salaryStr === w25str){
+    // 겹침 → 월급/출금일
+    events.push({
+      id:`salary-${year}-${month}`,
+      title:'💰 월급/출금일',
+      start: salaryStr,
+      allDay: true,
+      backgroundColor:'#D69E2E',
+      borderColor:'#B7791F',
+      textColor:'#1A202C',
+      classNames:['fixed-event'],
+    });
+  } else {
+    // 월급날
+    events.push({
+      id:`salary-${year}-${month}`,
+      title:'💰 월급날',
+      start: salaryStr,
+      allDay: true,
+      backgroundColor:'#D69E2E',
+      borderColor:'#B7791F',
+      textColor:'#1A202C',
+      classNames:['fixed-event'],
+    });
+    // 출금일 25
+    events.push({
+      id:`w25-${year}-${month}`,
+      title:'🏦 출금일',
+      start: w25str,
+      allDay: true,
+      backgroundColor:'#2351c5',
+      borderColor:'#1A3A8F',
+      textColor:'#fff',
+      classNames:['fixed-event'],
+    });
+  }
+
+  // 출금일 10
+  events.push({
+    id:`w10-${year}-${month}`,
+    title:'🏦 출금일',
+    start: w10str,
+    allDay: true,
+    backgroundColor:'#2351c5',
+    borderColor:'#1A3A8F',
+    textColor:'#fff',
+    classNames:['fixed-event'],
+  });
+
+  // 출금일 17
+  events.push({
+    id:`w17-${year}-${month}`,
+    title:'🏦 출금일',
+    start: w17str,
+    allDay: true,
+    backgroundColor:'#2351c5',
+    borderColor:'#1A3A8F',
+    textColor:'#fff',
+    classNames:['fixed-event'],
+  });
+
+  // 출금일 말일 (10, 17, 25와 겹치지 않을 때만)
+  if(wLastStr !== w10str && wLastStr !== w17str && wLastStr !== w25str && wLastStr !== salaryStr){
+    events.push({
+      id:`wlast-${year}-${month}`,
+      title:'🏦 출금일(말일)',
+      start: wLastStr,
+      allDay: true,
+      backgroundColor:'#2351c5',
+      borderColor:'#1A3A8F',
+      textColor:'#fff',
+      classNames:['fixed-event'],
+    });
+  }
+
+  return events;
+}
+
 /* ═══ 캘린더 ════════════════════════════════════════════════ */
 function renderCal(){
   const c=document.getElementById('cal-wrap');
   if(calInst){calInst.destroy();calInst=null;}c.innerHTML='';
-  const events=db.tasks.map(t=>{
+
+  // 업무 이벤트
+  const taskEvents=db.tasks.map(t=>{
     const m=findEntity(t.mid);
     let col='#2351c5';
     const p=PROCESS_DATA.find(x=>x.id===t.mid);
     if(p)col=p.color;else if(m)col=getAvColor(t.mid);
     const evColor = t.color || col;
     const bgColor = t.done ? evColor+'88' : evColor+'ee';
-    const brightColors = ['#E2E8F0','#D69E2E','#F97316'];
+    const brightColors = ['#E2E8F0','#D69E2E','#F97316','#EAB308'];
     const txtColor = brightColors.includes(t.color) ? '#1A202C' : '#fff';
     const ev={id:t.id,title:(m?m.name+' ':'')+t.text,start:t.startDate||t.date,backgroundColor:bgColor,borderColor:evColor,textColor:txtColor};
     if(t.startDate&&t.startDate!==t.date){
@@ -1132,11 +1292,61 @@ function renderCal(){
     }
     return ev;
   });
+
+  // 초기 고정 이벤트 (현재월 기준 ±2개월)
+  const now = new Date();
+  let fixedEvents = [];
+  for(let i=-2; i<=3; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+    fixedEvents = fixedEvents.concat(getFixedEvents(d.getFullYear(), d.getMonth()+1));
+  }
+
   calInst=new FullCalendar.Calendar(c,{
-    initialView:'dayGridMonth',locale:'ko',
+    initialView:'dayGridMonth',
+    locale:'ko',
     headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,dayGridWeek'},
-    events,
-    eventClick(info){const t=db.tasks.find(x=>x.id===info.event.id);if(t&&t.mid)openModal(t.mid);},
+    events:[...taskEvents, ...fixedEvents],
+    // 날짜 셀 렌더링 — 공휴일 빨간색 + 이름 표시
+    dayCellDidMount(info){
+      const str = dateToStr(info.date);
+      const dow = info.date.getDay();
+      const numEl = info.el.querySelector('.fc-daygrid-day-number');
+      if(!numEl) return;
+      if(HOLIDAYS[str]){
+        numEl.style.color = '#E53E3E';
+        numEl.style.fontWeight = '700';
+        // 공휴일 이름 표시
+        const label = document.createElement('span');
+        label.textContent = HOLIDAYS[str];
+        label.style.cssText = 'font-size:9px;color:#E53E3E;display:block;line-height:1;margin-top:1px;font-weight:500;';
+        numEl.appendChild(label);
+      } else if(dow===0){
+        numEl.style.color = '#E53E3E';
+      } else if(dow===6){
+        numEl.style.color = '#2351c5';
+      }
+    },
+    // 달 이동 시 고정 이벤트 동적 추가
+    datesSet(info){
+      // 현재 뷰의 연월 기준으로 고정 이벤트 갱신
+      const viewStart = info.view.currentStart;
+      const y = viewStart.getFullYear();
+      const m = viewStart.getMonth()+1;
+      // 이미 있는 fixed-event 제거 후 재추가
+      calInst.getEvents().forEach(ev=>{
+        if(ev.classNames && ev.classNames.includes('fixed-event')) ev.remove();
+      });
+      for(let i=-1; i<=2; i++){
+        const d = new Date(y, m-1+i, 1);
+        getFixedEvents(d.getFullYear(), d.getMonth()+1).forEach(ev=>calInst.addEvent(ev));
+      }
+    },
+    eventClick(info){
+      // 고정 이벤트는 클릭 무시
+      if(info.event.classNames && info.event.classNames.includes('fixed-event')) return;
+      const t=db.tasks.find(x=>x.id===info.event.id);
+      if(t&&t.mid)openModal(t.mid);
+    },
     height:'auto'
   });
   calInst.render();
