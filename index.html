@@ -557,20 +557,16 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;
       <div class="page-header">
         <div>
           <div class="page-title">대시보드</div>
-          <div class="page-sub">업무 현황 한눈에 보기</div>
+          <div class="page-sub">업무 요청 현황 한눈에 보기</div>
         </div>
         <button class="btn btn-ghost" onclick="renderDash()">새로고침</button>
       </div>
       <div class="content">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;" id="statCards"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div style="margin-bottom:18px;">
           <div class="card" style="border-top-color:var(--blue-main);">
-            <div class="card-title">담당자별 업무 현황</div>
-            <canvas id="barChart" height="200"></canvas>
-          </div>
-          <div class="card" style="border-top-color:var(--blue-mid);">
-            <div class="card-title">업무 상태 비율</div>
-            <canvas id="dnutChart" height="200"></canvas>
+            <div class="card-title">부서별 업무 요청 현황</div>
+            <canvas id="barChart" height="120"></canvas>
           </div>
         </div>
         <div class="card">
@@ -782,16 +778,7 @@ function getAvColor(id){if(!avMap[id])avMap[id]=AV_COLORS[avIdx++%AV_COLORS.leng
 const KEY='bums_v3';
 let db=(()=>{
   try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
-  return{tasks:[
-    {id:'t1',mid:'m08',text:'주간 생산 일정 보고',   date:ds(0), done:false},
-    {id:'t2',mid:'m06',text:'경영지원팀 회의록 작성', date:ds(1), done:false},
-    {id:'t3',mid:'m04',text:'예산안 검토',           date:ds(-1),done:false},
-    {id:'t4',mid:'m17',text:'물류 현황 정리',        date:ds(2), done:true},
-    {id:'t5',mid:'p01',text:'윤전기 월간 점검',      date:ds(3), done:false},
-    {id:'t6',mid:'p05',text:'시설 안전 점검표 제출', date:ds(0), done:false},
-    {id:'pt1',mid:'personal',text:'팀 목표 설정',    date:ds(0), done:false},
-    {id:'pt2',mid:'personal',text:'결재 서류 제출',  date:ds(2), done:false},
-  ]};
+  return{tasks:[]};
 })();
 function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 function ds(o=0){const d=new Date();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10);}
@@ -834,7 +821,7 @@ function findEntity(mid){
 function taskCount(mid){return db.tasks.filter(t=>t.mid===mid&&!t.done).length;}
 
 /* ═══ 대시보드 ══════════════════════════════════════════════ */
-let bChart=null,dChart=null;
+let bChart=null;
 function renderDash(){
   const today=ds();
   const total=db.tasks.length;
@@ -843,10 +830,10 @@ function renderDash(){
   const todayDue=db.tasks.filter(t=>!t.done&&t.date===today).length;
 
   const statDefs=[
-    {l:'전체 업무',v:total,c:'var(--blue-main)',s:'등록된 모든 업무'},
+    {l:'전체 요청',v:total,c:'var(--blue-main)',s:'등록된 모든 업무 요청'},
     {l:'완료',v:done,c:'var(--green-mid)',s:`완료율 ${total?Math.round(done/total*100):0}%`},
     {l:'오늘 마감',v:todayDue,c:'var(--amber-mid)',s:'오늘 처리 필요'},
-    {l:'지연',v:overdue,c:'var(--red-mid)',s:'기한 초과 업무'},
+    {l:'지연',v:overdue,c:'var(--red-mid)',s:'기한 초과 요청'},
   ];
   document.getElementById('statCards').innerHTML=statDefs.map((s,i)=>{
     const colors=['var(--blue-main)','var(--green-mid)','var(--amber-mid)','var(--red-mid)'];
@@ -857,36 +844,40 @@ function renderDash(){
     </div>`;
   }).join('');
 
-  const allE=[];
-  HIERARCHY.forEach(h=>h.teams.forEach(t=>t.members.forEach(m=>allE.push(m))));
-  PROCESS_DATA.forEach(p=>allE.push(p));
-  const wt=allE.map(m=>({name:m.name,todo:db.tasks.filter(t=>t.mid===m.id&&!t.done).length,d:db.tasks.filter(t=>t.mid===m.id&&t.done).length})).filter(m=>m.todo+m.d>0).slice(0,10);
+  // 부서별 집계 (팀 단위)
+  const deptData=[];
+  HIERARCHY.forEach(h=>{
+    h.teams.forEach(t=>{
+      const memberIds=t.members.map(m=>m.id);
+      const todo=db.tasks.filter(x=>memberIds.includes(x.mid)&&!x.done).length;
+      const done2=db.tasks.filter(x=>memberIds.includes(x.mid)&&x.done).length;
+      if(todo+done2>0) deptData.push({name:t.name,todo,done2});
+    });
+  });
+  // 공정구분도 포함
+  PROCESS_DATA.forEach(p=>{
+    const todo=db.tasks.filter(x=>x.mid===p.id&&!x.done).length;
+    const done2=db.tasks.filter(x=>x.mid===p.id&&x.done).length;
+    if(todo+done2>0) deptData.push({name:p.name,todo,done2});
+  });
 
   if(bChart)bChart.destroy();
-  bChart=new Chart(document.getElementById('barChart').getContext('2d'),{
-    type:'bar',
-    data:{labels:wt.map(m=>m.name),datasets:[
-      {label:'진행중',data:wt.map(m=>m.todo),backgroundColor:'rgba(35,81,197,.75)',borderRadius:4},
-      {label:'완료',data:wt.map(m=>m.d),backgroundColor:'rgba(99,153,34,.65)',borderRadius:4}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#6b7a99',font:{size:11}}}},
-      scales:{x:{stacked:true,ticks:{color:'#6b7a99',font:{size:9}},grid:{color:'#dbe9ff'}},
-              y:{stacked:true,ticks:{color:'#6b7a99',font:{size:10}},grid:{color:'#dbe9ff'}}}}
-  });
-
-  if(dChart)dChart.destroy();
-  const inprog=db.tasks.filter(t=>!t.done&&t.date>=today).length;
-  dChart=new Chart(document.getElementById('dnutChart').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['완료','진행중','지연'],datasets:[{
-      data:[done,inprog,overdue],
-      backgroundColor:['rgba(99,153,34,.8)','rgba(35,81,197,.8)','rgba(226,75,74,.8)'],
-      borderWidth:2,borderColor:'#fff'
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:'#6b7a99',font:{size:11},padding:12}}},cutout:'65%'}
-  });
+  if(!deptData.length){
+    document.getElementById('barChart').style.display='none';
+  } else {
+    document.getElementById('barChart').style.display='';
+    bChart=new Chart(document.getElementById('barChart').getContext('2d'),{
+      type:'bar',
+      data:{labels:deptData.map(d=>d.name),datasets:[
+        {label:'진행중',data:deptData.map(d=>d.todo),backgroundColor:'rgba(35,81,197,.75)',borderRadius:4},
+        {label:'완료',data:deptData.map(d=>d.done2),backgroundColor:'rgba(99,153,34,.65)',borderRadius:4}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#6b7a99',font:{size:11}}}},
+        scales:{x:{stacked:true,ticks:{color:'#6b7a99',font:{size:9},maxRotation:30},grid:{color:'#dbe9ff'}},
+                y:{stacked:true,ticks:{color:'#6b7a99',font:{size:10}},grid:{color:'#dbe9ff'}}}}
+    });
+  }
 
   const tl=db.tasks.filter(t=>(t.date===today||t.date<today)&&!t.done);
   const el=document.getElementById('todayList');
