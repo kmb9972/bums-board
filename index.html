@@ -1590,10 +1590,11 @@ document.getElementById('chatIn').addEventListener('keydown',e=>{if(e.key==='Ent
 
 /* ═══ 뱃지 ══════════════════════════════════════════════════ */
 function updateBadges(){
-  const today=ds();
-  const ov=db.tasks.filter(t=>!t.done&&t.date<today&&t.mid!=='personal').length;
+  // 조직도: 미완료 전체 (개인업무 제외)
+  const orgCnt=db.tasks.filter(t=>!t.done&&t.mid!=='personal').length;
   const ob=document.getElementById('orgBadge');
-  if(ov>0){ob.style.display='';ob.textContent=ov;}else ob.style.display='none';
+  if(orgCnt>0){ob.style.display='';ob.textContent=orgCnt;}else ob.style.display='none';
+  // 개인업무: 미완료 전체
   const pn=db.tasks.filter(t=>t.mid==='personal'&&!t.done).length;
   const pb=document.getElementById('persBadge');
   if(pn>0){pb.style.display='';pb.textContent=pn;}else pb.style.display='none';
