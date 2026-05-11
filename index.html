@@ -1139,82 +1139,142 @@ const HOLIDAYS = {
 function dateToStr(d){
   return d.toISOString().slice(0,10);
 }
-function isBusinessDay(d){
-  const day = d.getDay(); // 0=일,6=토
-  if(day===0||day===6) return false;
-  return !HOLIDAYS[dateToStr(d)];
-}
-function getPreviousBusinessDay(d){
-  const dt = new Date(d);
-  dt.setDate(dt.getDate()-1);
-  while(!isBusinessDay(dt)) dt.setDate(dt.getDate()-1);
-  return dt;
-}
-function getNextBusinessDay(d){
-  const dt = new Date(d);
-  dt.setDate(dt.getDate()+1);
-  while(!isBusinessDay(dt)) dt.setDate(dt.getDate()+1);
-  return dt;
-}
 
-/* ═══ 고정 캘린더 이벤트 생성 ══════════════════════════════ */
-function makeFixed(id, title, start, isSalary){
-  return {
-    id, title, start,
-    allDay: true,
-    backgroundColor: isSalary ? '#FDFFB6' : '#FFD6A5',  // 월급=노란파스텔, 출금=주황파스텔
-    borderColor:     isSalary ? '#D69E2E' : '#F97316',
-    textColor:       '#1A202C',
-    extendedProps:   {fixed: true},
-  };
-}
+/* ═══ 확정 재무 일정 데이터 (2026~2027) ══════════════════════ */
+const financeDates = [
+  // --- 2026년 ---
+  { date: '2026-01-12', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-01-19', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-01-23', type: 'salary',   label: '월급날' },
+  { date: '2026-01-26', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-01-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-02-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-02-19', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-02-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2026-02-27', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-03-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-03-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-03-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2026-03-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-04-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-04-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-04-24', type: 'salary',   label: '월급날' },
+  { date: '2026-04-27', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-04-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-05-11', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-05-18', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-05-22', type: 'salary',   label: '월급날' },
+  { date: '2026-05-26', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-05-29', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-06-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-06-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-06-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2026-06-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-07-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-07-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-07-24', type: 'salary',   label: '월급날' },
+  { date: '2026-07-27', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-07-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-08-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-08-18', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-08-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2026-08-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-09-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-09-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-09-23', type: 'salary',   label: '월급날' },
+  { date: '2026-09-28', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-09-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-10-12', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-10-19', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-10-23', type: 'salary',   label: '월급날' },
+  { date: '2026-10-26', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-10-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-11-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-11-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-11-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2026-11-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2026-12-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2026-12-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2026-12-24', type: 'salary',   label: '월급날' },
+  { date: '2026-12-28', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2026-12-31', type: 'withdraw', label: '말일 출금일' },
+  // --- 2027년 ---
+  { date: '2027-01-11', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-01-18', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-01-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-01-29', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-02-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-02-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-02-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-02-26', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-03-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-03-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-03-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-03-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-04-12', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-04-19', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-04-23', type: 'salary',   label: '월급날' },
+  { date: '2027-04-26', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2027-04-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-05-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-05-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-05-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-05-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-06-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-06-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-06-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-06-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-07-12', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-07-19', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-07-23', type: 'salary',   label: '월급날' },
+  { date: '2027-07-26', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2027-07-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-08-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-08-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-08-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-08-31', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-09-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-09-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-09-24', type: 'salary',   label: '월급날' },
+  { date: '2027-09-27', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2027-09-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-10-12', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-10-18', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-10-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-10-29', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-11-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-11-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-11-25', type: 'both',     label: '월급/출금일(25일)' },
+  { date: '2027-11-30', type: 'withdraw', label: '말일 출금일' },
+  { date: '2027-12-10', type: 'withdraw', label: '출금일(10일)' },
+  { date: '2027-12-17', type: 'withdraw', label: '출금일(17일)' },
+  { date: '2027-12-24', type: 'salary',   label: '월급날' },
+  { date: '2027-12-28', type: 'withdraw', label: '출금일(25일)' },
+  { date: '2027-12-31', type: 'withdraw', label: '말일 출금일' },
+];
 
-function getFixedEvents(year, month){
-  const events = [];
-  const lastDay = new Date(year, month, 0);
-
-  // 월급날: 25일 → 이전 영업일
-  const salary25 = new Date(year, month-1, 25);
-  const salaryDay = isBusinessDay(salary25) ? salary25 : getPreviousBusinessDay(salary25);
-  const salaryStr = dateToStr(salaryDay);
-
-  // 출금일 10 → 다음 영업일
-  const w10raw = new Date(year, month-1, 10);
-  const w10 = isBusinessDay(w10raw) ? w10raw : getNextBusinessDay(w10raw);
-  const w10str = dateToStr(w10);
-
-  // 출금일 17 → 다음 영업일
-  const w17raw = new Date(year, month-1, 17);
-  const w17 = isBusinessDay(w17raw) ? w17raw : getNextBusinessDay(w17raw);
-  const w17str = dateToStr(w17);
-
-  // 출금일 25 → 다음 영업일
-  const w25raw = new Date(year, month-1, 25);
-  const w25 = isBusinessDay(w25raw) ? w25raw : getNextBusinessDay(w25raw);
-  const w25str = dateToStr(w25);
-
-  // 출금일 말일 → 이전 영업일
-  const wLastDay = isBusinessDay(lastDay) ? lastDay : getPreviousBusinessDay(lastDay);
-  const wLastStr = dateToStr(wLastDay);
-
-  // 월급날 vs 출금25 겹침 여부
-  if(salaryStr === w25str){
-    events.push(makeFixed(`salary-${year}-${month}`, '월급/출금일', salaryStr, true));
-  } else {
-    events.push(makeFixed(`salary-${year}-${month}`, '월급날', salaryStr, true));
-    events.push(makeFixed(`w25-${year}-${month}`, '출금일', w25str, false));
-  }
-
-  events.push(makeFixed(`w10-${year}-${month}`, '출금일', w10str, false));
-  events.push(makeFixed(`w17-${year}-${month}`, '출금일', w17str, false));
-
-  // 말일 출금 (다른 날짜와 겹치지 않을 때만)
-  const allDates = [w10str, w17str, w25str, salaryStr];
-  if(!allDates.includes(wLastStr)){
-    events.push(makeFixed(`wlast-${year}-${month}`, '출금일(말일)', wLastStr, false));
-  }
-
-  return events;
+/* ═══ 확정 데이터 기반 고정 이벤트 생성 ═══════════════════════ */
+function getFixedEvents(){
+  return financeDates.map((fd, i) => {
+    let bg, border, text;
+    if(fd.type === 'both'){
+      bg = '#FDFFB6'; border = '#D69E2E'; text = '#7B5E00'; // 연노랑
+    } else if(fd.type === 'salary'){
+      bg = '#BDE0FE'; border = '#2351c5'; text = '#0D3B8C'; // 연파랑
+    } else {
+      bg = '#FFD6A5'; border = '#F97316'; text = '#7C3A00'; // 연주황
+    }
+    return {
+      id: `finance-${i}`,
+      title: fd.label,
+      start: fd.date,
+      allDay: true,
+      backgroundColor: bg,
+      borderColor: border,
+      textColor: text,
+      extendedProps: { fixed: true },
+    };
+  });
 }
 
 /* ═══ 캘린더 ════════════════════════════════════════════════ */
@@ -1284,18 +1344,11 @@ function renderCal(){
       }
     },
     datesSet(info){
-      // 고정 이벤트 모두 제거 후 재추가
+      // 고정 이벤트 모두 제거 후 전체 재추가 (확정 데이터 기반)
       calInst.getEvents().forEach(ev=>{
         if(ev.extendedProps && ev.extendedProps.fixed) ev.remove();
       });
-      const viewStart = info.view.currentStart;
-      const y = viewStart.getFullYear();
-      const m = viewStart.getMonth()+1;
-      for(let i=-1; i<=2; i++){
-        const d = new Date(y, m-1+i, 1);
-        getFixedEvents(d.getFullYear(), d.getMonth()+1)
-          .forEach(ev=>calInst.addEvent(ev));
-      }
+      getFixedEvents().forEach(ev=>calInst.addEvent(ev));
     },
     eventClick(info){
       if(info.event.extendedProps && info.event.extendedProps.fixed) return;
