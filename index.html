@@ -90,6 +90,69 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
 
 /* ══════════════════════════════════════
+   업무 요청 현황 아코디언 카드
+══════════════════════════════════════ */
+.req-card{
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin-bottom:8px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:box-shadow .15s;
+}
+.req-card:hover{box-shadow:var(--shadow-md);}
+.req-card.has-emergency{border-color:#FC4545;}
+.req-card-head{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;
+  background:var(--surface2);
+  cursor:pointer;user-select:none;
+  transition:background .15s;
+}
+.req-card-head:hover{background:var(--accent-l);}
+.req-card-head.open{background:var(--accent-l);}
+.req-card-avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+  font-family:'Montserrat',sans-serif;
+  flex-shrink:0;
+}
+.req-card-name{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+.req-card-role{font-size:11px;color:var(--text3);margin-left:4px;font-weight:400;}
+.req-card-badge{
+  font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:10px;
+  font-family:'Montserrat',sans-serif;
+  flex-shrink:0;
+}
+.req-card-badge.todo{background:#dbeafe;color:#1d4ed8;}
+.req-card-badge.emergency{background:#fee2e2;color:#E53E3E;}
+.req-card-arrow{color:var(--text3);font-size:11px;transition:transform .2s;flex-shrink:0;}
+.req-card-head.open .req-card-arrow{transform:rotate(90deg);}
+.req-card-body{
+  display:none;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+}
+.req-card-body.open{display:block;}
+.req-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.req-row:last-child{border-bottom:none;}
+.req-row:hover{background:var(--accent-l);}
+.req-row.emergency-row{background:#fff5f5;}
+.req-row.done-row{opacity:.5;}
+.req-row-text{font-size:13px;flex:1;color:var(--text2);}
+.req-row-date{font-size:10px;font-family:'Montserrat',sans-serif;color:var(--text3);white-space:nowrap;flex-shrink:0;}
+.req-row-date.overdue{color:#E53E3E;font-weight:700;}
+.req-row-date.today{color:#F97316;font-weight:700;}
+.req-row-date.soon{color:#D69E2E;font-weight:700;}
+
+/* ══════════════════════════════════════
    업무 요청 현황 테이블
 ══════════════════════════════════════ */
 .req-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -815,83 +878,104 @@ function renderTaskTable(){
   const wrap=document.getElementById('taskTableWrap');
   if(!wrap) return;
 
-  // 모든 업무 (개인 포함) 미완료 + 완료 전체, 마감일 오름차순
-  const allTasks=[...db.tasks].sort((a,b)=>a.date.localeCompare(b.date));
-
-  if(!allTasks.length){
+  if(!db.tasks.length){
     wrap.innerHTML='<div class="req-empty">등록된 업무가 없습니다</div>';
     return;
   }
 
-  // 담당자 정보 가져오기
+  // 담당자 정보
   function getAssigneeInfo(mid){
-    if(mid==='personal') return {name:'강민범',role:'선임'};
+    if(mid==='personal') return {name:'강민범',role:'선임',color:'#2351c5'};
     for(const h of HIERARCHY)
       for(const t of h.teams){
         const m=t.members.find(x=>x.id===mid);
-        if(m) return {name:m.name.replace('(나)',''),role:m.role};
+        if(m) return {name:m.name.replace('(나)',''),role:m.role,color:getAvColor(mid)};
       }
     const p=PROCESS_DATA.find(x=>x.id===mid);
-    if(p) return {name:p.name,role:'공정'};
-    return {name:'-',role:''};
+    if(p) return {name:p.name,role:'공정',color:p.color};
+    return {name:'-',role:'',color:'#718096'};
   }
 
-  // 날짜 표시 스타일
+  // 날짜 클래스
   function dateClass(date,done){
     if(done) return '';
     if(date<today) return 'overdue';
     if(date===today) return 'today';
-    const diff=(new Date(date)-new Date(today))/(1000*60*60*24);
-    if(diff<=3) return 'soon';
+    if((new Date(date)-new Date(today))/(1000*60*60*24)<=3) return 'soon';
     return '';
   }
   function dateLabel(t){
-    if(t.startDate&&t.startDate!==t.date) return t.startDate+' ~ '+t.date;
-    return t.date;
+    return t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date;
   }
 
-  const rows=allTasks.map(t=>{
-    const a=getAssigneeInfo(t.mid);
-    const dc=dateClass(t.date,t.done);
-    const isEmg=t.emergency&&!t.done;
-    return `<tr class="${isEmg?'emergency-row':''}${t.done?' done-row':''}">
-      <td>
+  // 담당자별 그룹핑
+  const groups={};
+  db.tasks.forEach(t=>{
+    if(!groups[t.mid]) groups[t.mid]=[];
+    groups[t.mid].push(t);
+  });
+
+  // 미완료 업무 많은 순 정렬
+  const sortedMids=Object.keys(groups).sort((a,b)=>{
+    const aTodo=groups[a].filter(t=>!t.done).length;
+    const bTodo=groups[b].filter(t=>!t.done).length;
+    return bTodo-aTodo;
+  });
+
+  const cards=sortedMids.map(mid=>{
+    const tasks=[...groups[mid]].sort((a,b)=>a.date.localeCompare(b.date));
+    const a=getAssigneeInfo(mid);
+    const todoCount=tasks.filter(t=>!t.done).length;
+    const emergencyCount=tasks.filter(t=>t.emergency&&!t.done).length;
+    const hasEmergency=emergencyCount>0;
+    // 미완료 업무 있으면 기본 펼침
+    const isOpen=todoCount>0;
+    const initials=a.name.slice(0,2);
+    const cardId='req-card-'+mid;
+
+    const rows=tasks.map(t=>{
+      const dc=dateClass(t.date,t.done);
+      const isEmg=t.emergency&&!t.done;
+      return `<div class="req-row${isEmg?' emergency-row':''}${t.done?' done-row':''}">
         <input type="checkbox" class="req-check" ${t.done?'checked':''}
           onchange="toggleT('${t.id}');renderTaskTable();updateBadges();">
-      </td>
-      <td>
-        <span class="req-assignee">${a.name}</span>
-        ${a.role?`<span class="req-role">${a.role}</span>`:''}
-      </td>
-      <td class="req-task">
-        ${isEmg?'<span style="font-size:10px;background:#E53E3E;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;margin-right:4px">긴급</span>':''}
-        ${t.color&&!t.emergency?`<span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block;margin-right:4px;vertical-align:middle"></span>`:''}
-        ${t.text}
-        ${t.memo?`<span title="${t.memo}" style="color:var(--text3);cursor:help;margin-left:3px">📝</span>`:''}
-      </td>
-      <td>
-        <span class="req-date ${dc}">${dateLabel(t)}</span>
-      </td>
-      <td>
-        <button class="task-edit" onclick="openEdit('${t.id}','dash')" title="수정" style="margin-right:2px">✎</button>
+        ${isEmg?'<span style="font-size:10px;background:#E53E3E;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0">긴급</span>':''}
+        ${t.color&&!t.emergency?`<span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block;flex-shrink:0"></span>`:''}
+        <span class="req-row-text">${t.text}${t.memo?` <span title="${t.memo}" style="color:var(--text3);cursor:help">📝</span>`:''}</span>
+        <span class="req-row-date ${dc}">${dateLabel(t)}</span>
+        <button class="task-edit" onclick="openEdit('${t.id}','dash')" title="수정">✎</button>
         <button class="task-del" onclick="delT('${t.id}');renderTaskTable();updateBadges();">✕</button>
-      </td>
-    </tr>`;
+      </div>`;
+    }).join('');
+
+    return `<div class="req-card${hasEmergency?' has-emergency':''}" id="${cardId}">
+      <div class="req-card-head${isOpen?' open':''}" onclick="toggleReqCard('${cardId}')">
+        <div class="req-card-avatar" style="background:${a.color}20;border:1.5px solid ${a.color}50;color:${a.color}">
+          ${initials}
+        </div>
+        <span class="req-card-name">${a.name}<span class="req-card-role">${a.role}</span></span>
+        ${hasEmergency
+          ?`<span class="req-card-badge emergency">🚨 긴급 ${emergencyCount}</span>`
+          :''}
+        ${todoCount>0
+          ?`<span class="req-card-badge todo">${todoCount}개</span>`
+          :'<span class="req-card-badge" style="background:var(--surface2);color:var(--text3)">완료</span>'}
+        <span class="req-card-arrow">▶</span>
+      </div>
+      <div class="req-card-body${isOpen?' open':''}" id="${cardId}-body">
+        ${rows}
+      </div>
+    </div>`;
   }).join('');
 
-  wrap.innerHTML=`
-    <table class="req-table">
-      <thead>
-        <tr>
-          <th style="width:32px"></th>
-          <th>담당자</th>
-          <th>업무명</th>
-          <th>일정</th>
-          <th style="width:60px"></th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  wrap.innerHTML=cards;
+}
+
+function toggleReqCard(cardId){
+  const head=document.querySelector('#'+cardId+' .req-card-head');
+  const body=document.getElementById(cardId+'-body');
+  head.classList.toggle('open');
+  body.classList.toggle('open');
 }
 
 /* ══════════════════════════════════════
