@@ -466,11 +466,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
           <div class="color-dot" style="background:#FFD6A5" data-color="#FFD6A5" title="주황" onclick="selColor(this,'#FFD6A5')"></div>
           <div class="color-dot" style="background:#FDFFB6" data-color="#FDFFB6" title="노랑" onclick="selColor(this,'#FDFFB6')"></div>
           <div class="color-dot" style="background:#CAFFBF" data-color="#CAFFBF" title="초록" onclick="selColor(this,'#CAFFBF')"></div>
-          <div class="color-dot" style="background:#A0C4FF" data-color="#A0C4FF" title="파랑" onclick="selColor(this,'#A0C4FF')"></div>
           <div class="color-dot" style="background:#BDE0FE" data-color="#BDE0FE" title="하늘" onclick="selColor(this,'#BDE0FE')"></div>
+          <div class="color-dot" style="background:#A0C4FF" data-color="#A0C4FF" title="파랑" onclick="selColor(this,'#A0C4FF')"></div>
           <div class="color-dot" style="background:#C8B6FF" data-color="#C8B6FF" title="보라" onclick="selColor(this,'#C8B6FF')"></div>
           <div class="color-dot" style="background:#D4D4D4" data-color="#D4D4D4" title="회색" onclick="selColor(this,'#D4D4D4')"></div>
-          <div class="color-dot" style="background:#2D3748;border:2px solid #555" data-color="#2D3748" title="검정" onclick="selColor(this,'#2D3748')"></div>
+          <div class="color-dot" style="background:#FFB3C6" data-color="#FFB3C6" title="분홍" onclick="selColor(this,'#FFB3C6')"></div>
+          <div class="color-dot" style="background:#FFCBA4" data-color="#FFCBA4" title="복숭아" onclick="selColor(this,'#FFCBA4')"></div>
+          <div class="color-dot" style="background:#B5EAD7" data-color="#B5EAD7" title="민트" onclick="selColor(this,'#B5EAD7')"></div>
+          <div class="color-dot" style="background:#E2C9FB" data-color="#E2C9FB" title="라벤더" onclick="selColor(this,'#E2C9FB')"></div>
+          <div class="color-dot" style="background:#FFDAC1" data-color="#FFDAC1" title="살구" onclick="selColor(this,'#FFDAC1')"></div>
+          <div class="color-dot" style="background:#C7F2A4" data-color="#C7F2A4" title="연두" onclick="selColor(this,'#C7F2A4')"></div>
+          <div class="color-dot" style="background:#FFBFB5" data-color="#FFBFB5" title="코랄" onclick="selColor(this,'#FFBFB5')"></div>
         </div>
       </div>
       <div class="edit-field">
@@ -691,9 +697,15 @@ function dateToStr(d){return d.toISOString().slice(0,10);}
     {kw:'초록색',hex:'#CAFFBF'},{kw:'초록',hex:'#CAFFBF'},{kw:'녹색',hex:'#CAFFBF'},
     {kw:'하늘색',hex:'#BDE0FE'},{kw:'하늘',hex:'#BDE0FE'},
     {kw:'파란색',hex:'#A0C4FF'},{kw:'파랑',hex:'#A0C4FF'},{kw:'파란',hex:'#A0C4FF'},
-    {kw:'남색',hex:'#A0C4FF'},{kw:'보라색',hex:'#C8B6FF'},{kw:'보라',hex:'#C8B6FF'},
-    {kw:'회색',hex:'#D4D4D4'},{kw:'흰색',hex:'#F1F5F9'},{kw:'하얀',hex:'#F1F5F9'},
-    {kw:'검은색',hex:'#2D3748'},{kw:'검정',hex:'#2D3748'},{kw:'검은',hex:'#2D3748'},
+    {kw:'보라색',hex:'#C8B6FF'},{kw:'보라',hex:'#C8B6FF'},
+    {kw:'회색',hex:'#D4D4D4'},
+    {kw:'분홍색',hex:'#FFB3C6'},{kw:'분홍',hex:'#FFB3C6'},{kw:'핑크',hex:'#FFB3C6'},
+    {kw:'복숭아색',hex:'#FFCBA4'},{kw:'복숭아',hex:'#FFCBA4'},
+    {kw:'민트색',hex:'#B5EAD7'},{kw:'민트',hex:'#B5EAD7'},
+    {kw:'라벤더색',hex:'#E2C9FB'},{kw:'라벤더',hex:'#E2C9FB'},
+    {kw:'살구색',hex:'#FFDAC1'},{kw:'살구',hex:'#FFDAC1'},
+    {kw:'연두색',hex:'#C7F2A4'},{kw:'연두',hex:'#C7F2A4'},
+    {kw:'코랄색',hex:'#FFBFB5'},{kw:'코랄',hex:'#FFBFB5'},
   ];
   let changed=false;
   db.tasks.forEach(t=>{
@@ -1184,9 +1196,15 @@ const COLOR_MAP=[
   {kw:'초록색',hex:'#CAFFBF'},{kw:'초록',hex:'#CAFFBF'},{kw:'녹색',hex:'#CAFFBF'},
   {kw:'하늘색',hex:'#BDE0FE'},{kw:'하늘',hex:'#BDE0FE'},
   {kw:'파란색',hex:'#A0C4FF'},{kw:'파랑',hex:'#A0C4FF'},{kw:'파란',hex:'#A0C4FF'},
-  {kw:'남색',hex:'#A0C4FF'},{kw:'보라색',hex:'#C8B6FF'},{kw:'보라',hex:'#C8B6FF'},
-  {kw:'회색',hex:'#D4D4D4'},{kw:'흰색',hex:'#F1F5F9'},{kw:'하얀',hex:'#F1F5F9'},
-  {kw:'검은색',hex:'#2D3748'},{kw:'검정',hex:'#2D3748'},{kw:'검은',hex:'#2D3748'},
+  {kw:'보라색',hex:'#C8B6FF'},{kw:'보라',hex:'#C8B6FF'},
+  {kw:'회색',hex:'#D4D4D4'},
+  {kw:'분홍색',hex:'#FFB3C6'},{kw:'분홍',hex:'#FFB3C6'},{kw:'핑크',hex:'#FFB3C6'},
+  {kw:'복숭아색',hex:'#FFCBA4'},{kw:'복숭아',hex:'#FFCBA4'},
+  {kw:'민트색',hex:'#B5EAD7'},{kw:'민트',hex:'#B5EAD7'},
+  {kw:'라벤더색',hex:'#E2C9FB'},{kw:'라벤더',hex:'#E2C9FB'},
+  {kw:'살구색',hex:'#FFDAC1'},{kw:'살구',hex:'#FFDAC1'},
+  {kw:'연두색',hex:'#C7F2A4'},{kw:'연두',hex:'#C7F2A4'},
+  {kw:'코랄색',hex:'#FFBFB5'},{kw:'코랄',hex:'#FFBFB5'},
 ];
 
 function parseChat(){
