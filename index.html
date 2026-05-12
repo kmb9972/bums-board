@@ -92,6 +92,58 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
 
 /* ══════════════════════════════════════
+   업무 요청 현황 테이블
+══════════════════════════════════════ */
+.req-table{width:100%;border-collapse:collapse;font-size:13px}
+.req-table th{
+  padding:8px 12px;text-align:left;
+  font-size:11px;font-weight:700;
+  color:var(--text3);
+  background:var(--surface2);
+  border-bottom:2px solid var(--border);
+  text-transform:uppercase;letter-spacing:.04em;
+  white-space:nowrap;
+}
+.req-table th:first-child{border-radius:var(--rs) 0 0 0}
+.req-table th:last-child{border-radius:0 var(--rs) 0 0}
+.req-table td{
+  padding:9px 12px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.req-table tr:last-child td{border-bottom:none}
+.req-table tr:hover td{background:var(--accent-l)}
+.req-table tr.emergency-row td{background:#fff5f5}
+.req-table tr.done-row td{opacity:.5}
+.req-assignee{
+  font-weight:700;color:var(--text);
+  white-space:nowrap;
+}
+.req-role{
+  font-size:11px;color:var(--text3);
+  margin-left:4px;font-weight:400;
+}
+.req-task{color:var(--text2)}
+.req-date{
+  font-size:11px;font-family:'Montserrat',sans-serif;
+  color:var(--text3);white-space:nowrap;
+}
+.req-date.overdue{color:#E53E3E;font-weight:700}
+.req-date.today{color:#F97316;font-weight:700}
+.req-date.soon{color:#D69E2E;font-weight:700}
+.req-check{
+  width:15px;height:15px;border-radius:3px;
+  border:1.5px solid var(--border2);
+  background:transparent;cursor:pointer;
+  appearance:none;transition:all .15s;
+}
+.req-check:checked{background:#38A169;border-color:#38A169}
+.req-empty{
+  text-align:center;padding:28px;
+  color:var(--text3);font-size:13px;
+}
+
+/* ══════════════════════════════════════
    D-DAY 섹션
 ══════════════════════════════════════ */
 .dday-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
@@ -314,10 +366,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
         <div class="dday-grid" id="ddayGrid"></div>
         <!-- 통계 -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px" id="statCards"></div>
-        <!-- 차트 -->
+        <!-- 업무 요청 현황 테이블 -->
         <div class="card" style="margin-bottom:18px">
-          <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.03em">부서별 업무 요청 현황</div>
-          <div id="barChartWrap"><canvas id="barChart" height="120"></canvas></div>
+          <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.03em">업무 요청 현황</div>
+          <div id="taskTableWrap"></div>
         </div>
       </div>
     </div>
@@ -703,7 +755,6 @@ function go(s){
 /* ══════════════════════════════════════
    D-DAY 대시보드
 ══════════════════════════════════════ */
-let bChart=null;
 function renderDash(){
   const today=ds();
   const d1=ds(1),d2=ds(2),d3=ds(3);
@@ -748,45 +799,92 @@ function renderDash(){
       <div class="stat-sub">${s.s}</div>
     </div>`).join('');
 
-  // 차트 - 부서별
-  const deptData=[];
-  HIERARCHY.forEach(h=>h.teams.forEach(t=>{
-    const mids=t.members.map(m=>m.id);
-    const todo=db.tasks.filter(x=>mids.includes(x.mid)&&!x.done).length;
-    const d=db.tasks.filter(x=>mids.includes(x.mid)&&x.done).length;
-    if(todo+d>0)deptData.push({name:t.name,todo,done:d});
-  }));
-  PROCESS_DATA.forEach(p=>{
-    const todo=db.tasks.filter(x=>x.mid===p.id&&!x.done).length;
-    const d=db.tasks.filter(x=>x.mid===p.id&&x.done).length;
-    if(todo+d>0)deptData.push({name:p.name,todo,done:d});
-  });
+  // 업무 요청 현황 테이블
+  renderTaskTable();
+}
 
-  if(bChart)bChart.destroy();
-  const wrap=document.getElementById('barChartWrap');
-  if(!deptData.length){
-    wrap.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">등록된 업무가 없습니다</div>';
+function renderTaskTable(){
+  const today=ds();
+  const wrap=document.getElementById('taskTableWrap');
+  if(!wrap) return;
+
+  // 모든 업무 (개인 포함) 미완료 + 완료 전체, 마감일 오름차순
+  const allTasks=[...db.tasks].sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(!allTasks.length){
+    wrap.innerHTML='<div class="req-empty">등록된 업무가 없습니다</div>';
     return;
   }
-  wrap.innerHTML='<canvas id="barChart" height="120"></canvas>';
-  bChart=new Chart(document.getElementById('barChart').getContext('2d'),{
-    type:'bar',
-    data:{
-      labels:deptData.map(d=>d.name),
-      datasets:[
-        {label:'진행중',data:deptData.map(d=>d.todo),backgroundColor:'rgba(35,81,197,.7)',borderRadius:4},
-        {label:'완료',data:deptData.map(d=>Math.round(d.done)),backgroundColor:'rgba(56,161,105,.6)',borderRadius:4},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#6b7a99',font:{size:11}}}},
-      scales:{
-        x:{stacked:true,ticks:{color:'#6b7a99',font:{size:9},maxRotation:30},grid:{color:'#dbe9ff'}},
-        y:{stacked:true,ticks:{color:'#6b7a99',font:{size:10},callback:v=>Math.round(v)},grid:{color:'#dbe9ff'}},
+
+  // 담당자 정보 가져오기
+  function getAssigneeInfo(mid){
+    if(mid==='personal') return {name:'강민범',role:'선임'};
+    for(const h of HIERARCHY)
+      for(const t of h.teams){
+        const m=t.members.find(x=>x.id===mid);
+        if(m) return {name:m.name.replace('(나)',''),role:m.role};
       }
-    }
-  });
+    const p=PROCESS_DATA.find(x=>x.id===mid);
+    if(p) return {name:p.name,role:'공정'};
+    return {name:'-',role:''};
+  }
+
+  // 날짜 표시 스타일
+  function dateClass(date,done){
+    if(done) return '';
+    if(date<today) return 'overdue';
+    if(date===today) return 'today';
+    const diff=(new Date(date)-new Date(today))/(1000*60*60*24);
+    if(diff<=3) return 'soon';
+    return '';
+  }
+  function dateLabel(t){
+    if(t.startDate&&t.startDate!==t.date) return t.startDate+' ~ '+t.date;
+    return t.date;
+  }
+
+  const rows=allTasks.map(t=>{
+    const a=getAssigneeInfo(t.mid);
+    const dc=dateClass(t.date,t.done);
+    const isEmg=t.emergency&&!t.done;
+    return `<tr class="${isEmg?'emergency-row':''}${t.done?' done-row':''}">
+      <td>
+        <input type="checkbox" class="req-check" ${t.done?'checked':''}
+          onchange="toggleT('${t.id}');renderTaskTable();updateBadges();">
+      </td>
+      <td>
+        <span class="req-assignee">${a.name}</span>
+        ${a.role?`<span class="req-role">${a.role}</span>`:''}
+      </td>
+      <td class="req-task">
+        ${isEmg?'<span style="font-size:10px;background:#E53E3E;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;margin-right:4px">긴급</span>':''}
+        ${t.color&&!t.emergency?`<span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block;margin-right:4px;vertical-align:middle"></span>`:''}
+        ${t.text}
+        ${t.memo?`<span title="${t.memo}" style="color:var(--text3);cursor:help;margin-left:3px">📝</span>`:''}
+      </td>
+      <td>
+        <span class="req-date ${dc}">${dateLabel(t)}</span>
+      </td>
+      <td>
+        <button class="task-edit" onclick="openEdit('${t.id}','dash')" title="수정" style="margin-right:2px">✎</button>
+        <button class="task-del" onclick="delT('${t.id}');renderTaskTable();updateBadges();">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML=`
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th>담당자</th>
+          <th>업무명</th>
+          <th>일정</th>
+          <th style="width:60px"></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 /* ══════════════════════════════════════
