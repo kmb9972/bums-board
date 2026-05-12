@@ -56,9 +56,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 /* ── 사이드바 ── */
 .sidebar{width:210px;min-width:210px;background:var(--sidebar-bg);display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(35,81,197,.15)}
-.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
-.sidebar-logo .l1{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#fff;letter-spacing:2px}
-.sidebar-logo .l2{font-size:10px;color:rgba(255,255,255,.4);margin-top:3px}
+
 .nav-section-label{font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.35);padding:14px 18px 6px;text-transform:uppercase}
 .nav-item{display:flex;align-items:center;padding:9px 18px;font-size:13px;cursor:pointer;color:var(--sidebar-text);transition:all .15s;border-left:3px solid transparent;user-select:none;gap:8px}
 .nav-item:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.06)}
@@ -320,7 +318,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 
 <!-- 상단 바 -->
 <div class="top-bar">
-  <span class="top-logo">BEOM WORK BOARD</span>
+  <span class="top-logo">BUM'S WORK BOARD</span>
   <div class="top-right">
     <span class="status-pill">시스템 정상</span>
     <span id="clockEl" class="mono"></span>
@@ -331,11 +329,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 <div class="app-wrap">
   <!-- 사이드바 -->
   <nav class="sidebar">
-    <div class="sidebar-logo">
-      <div class="l1">BEOM WORK BOARD</div>
-      <div class="l2">v2.0 업무 컨트롤 타워</div>
-    </div>
-    <div style="padding:10px 0;flex:1">
+
+    <div style="padding:16px 0 10px;flex:1">
       <div class="nav-section-label">메뉴</div>
       <div class="nav-item active" onclick="go('dashboard')" id="nav-dashboard">대시보드</div>
       <div class="nav-item" onclick="go('org')" id="nav-org">조직도 <span class="nav-badge" id="orgBadge" style="display:none"></span></div>
@@ -1029,16 +1024,14 @@ function renderCal(){
 
   const taskEvents=db.tasks.map(t=>{
     const m=findEntity(t.mid);
-    let col=getAvColor(t.mid)||'#2351c5';
-    const p=PROCESS_DATA.find(x=>x.id===t.mid);
-    if(p)col=p.color;
     // 긴급 → 항상 빨강
     if(t.emergency){
       return{id:t.id,title:t.text,start:t.startDate||t.date,
         backgroundColor:'#FF0000',borderColor:'#CC0000',textColor:'#fff',
         extendedProps:{taskId:t.id}};
     }
-    const baseColor=t.color||col;
+    // 색상 미지정 시 회색
+    const baseColor=t.color||'#D4D4D4';
     const ev={id:t.id,title:t.text,start:t.startDate||t.date,
       backgroundColor:baseColor,borderColor:baseColor,textColor:'#1A202C',
       extendedProps:{taskId:t.id}};
