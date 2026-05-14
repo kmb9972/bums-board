@@ -774,15 +774,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
       <div class="content">
         <!-- 탭 -->
         <div style="display:flex;justify-content:center;margin-bottom:24px">
-        <div style="display:flex;gap:4px;background:var(--surface2);border-radius:var(--rs);padding:4px;border:1px solid var(--border);width:fit-content">
+        <div style="display:flex;gap:4px;background:var(--surface2);border-radius:var(--rs);padding:4px;border:1px solid var(--border)">
           <button class="vat-mode-btn active" id="calcTab1" onclick="switchCalcTab('basic')">일반 계산기</button>
           <button class="vat-mode-btn" id="calcTab2" onclick="switchCalcTab('vat')">부가세 계산기</button>
         </div>
         </div>
 
         <!-- 일반 계산기 -->
-        <div id="calcBasicView">
-          <div style="display:flex;gap:28px;align-items:flex-start;justify-content:center;max-width:900px;margin:0 auto">
+        <div id="calcBasicView" style="max-width:860px;margin:0 auto;width:100%">
+          <div style="display:flex;gap:28px;align-items:flex-start">
             <!-- 계산기 본체 -->
             <div style="width:400px;flex-shrink:0">
               <div class="calc-box">
@@ -825,8 +825,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
         </div>
 
         <!-- 부가세 계산기 — 3열 동시 표시 -->
-        <div id="calcVatView" style="display:none">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1100px;margin:0 auto">
+        <div id="calcVatView" style="display:none;max-width:1100px;margin:0 auto;width:100%">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
 
             <!-- 공급가 → 합계 -->
             <div class="vat-box">
