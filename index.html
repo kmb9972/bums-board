@@ -773,106 +773,128 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
       </div>
       <div class="content">
         <!-- 탭 -->
-        <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);border-radius:var(--rs);padding:4px;border:1px solid var(--border);width:fit-content">
+        <div style="display:flex;gap:4px;margin-bottom:24px;background:var(--surface2);border-radius:var(--rs);padding:4px;border:1px solid var(--border);width:fit-content">
           <button class="vat-mode-btn active" id="calcTab1" onclick="switchCalcTab('basic')">일반 계산기</button>
           <button class="vat-mode-btn" id="calcTab2" onclick="switchCalcTab('vat')">부가세 계산기</button>
         </div>
 
         <!-- 일반 계산기 -->
         <div id="calcBasicView">
-          <div style="max-width:320px">
-            <div class="calc-box">
-              <div class="calc-screen">
-                <div class="calc-expr" id="calcExpr"></div>
-                <div class="calc-display" id="calcDisplay">0</div>
+          <div style="display:flex;gap:28px;align-items:flex-start;justify-content:center">
+            <!-- 계산기 본체 -->
+            <div style="width:400px;flex-shrink:0">
+              <div class="calc-box">
+                <div class="calc-screen">
+                  <div class="calc-expr" id="calcExpr"></div>
+                  <div class="calc-display" id="calcDisplay">0</div>
+                </div>
+                <div class="calc-btns">
+                  <button class="calc-btn fn clear" onclick="calcClear()">AC</button>
+                  <button class="calc-btn fn" onclick="calcToggleSign()">±</button>
+                  <button class="calc-btn fn" onclick="calcPercent()">%</button>
+                  <button class="calc-btn op" onclick="calcOp('÷')">÷</button>
+                  <button class="calc-btn" onclick="calcNum('7')">7</button>
+                  <button class="calc-btn" onclick="calcNum('8')">8</button>
+                  <button class="calc-btn" onclick="calcNum('9')">9</button>
+                  <button class="calc-btn op" onclick="calcOp('×')">×</button>
+                  <button class="calc-btn" onclick="calcNum('4')">4</button>
+                  <button class="calc-btn" onclick="calcNum('5')">5</button>
+                  <button class="calc-btn" onclick="calcNum('6')">6</button>
+                  <button class="calc-btn op" onclick="calcOp('-')">−</button>
+                  <button class="calc-btn" onclick="calcNum('1')">1</button>
+                  <button class="calc-btn" onclick="calcNum('2')">2</button>
+                  <button class="calc-btn" onclick="calcNum('3')">3</button>
+                  <button class="calc-btn op" onclick="calcOp('+')">+</button>
+                  <button class="calc-btn zero" onclick="calcNum('0')">0</button>
+                  <button class="calc-btn" onclick="calcDot()">.</button>
+                  <button class="calc-btn eq" onclick="calcEquals()">=</button>
+                </div>
               </div>
-              <div class="calc-btns">
-                <button class="calc-btn fn clear" onclick="calcClear()">AC</button>
-                <button class="calc-btn fn" onclick="calcToggleSign()">±</button>
-                <button class="calc-btn fn" onclick="calcPercent()">%</button>
-                <button class="calc-btn op" onclick="calcOp('÷')">÷</button>
-                <button class="calc-btn" onclick="calcNum('7')">7</button>
-                <button class="calc-btn" onclick="calcNum('8')">8</button>
-                <button class="calc-btn" onclick="calcNum('9')">9</button>
-                <button class="calc-btn op" onclick="calcOp('×')">×</button>
-                <button class="calc-btn" onclick="calcNum('4')">4</button>
-                <button class="calc-btn" onclick="calcNum('5')">5</button>
-                <button class="calc-btn" onclick="calcNum('6')">6</button>
-                <button class="calc-btn op" onclick="calcOp('-')">−</button>
-                <button class="calc-btn" onclick="calcNum('1')">1</button>
-                <button class="calc-btn" onclick="calcNum('2')">2</button>
-                <button class="calc-btn" onclick="calcNum('3')">3</button>
-                <button class="calc-btn op" onclick="calcOp('+')">+</button>
-                <button class="calc-btn zero" onclick="calcNum('0')">0</button>
-                <button class="calc-btn" onclick="calcDot()">.</button>
-                <button class="calc-btn eq" onclick="calcEquals()">=</button>
+            </div>
+            <!-- 히스토리 -->
+            <div style="flex:1;max-width:400px">
+              <div class="card" style="min-height:300px">
+                <div class="card-title">계산 히스토리</div>
+                <div id="calcHistory" style="font-size:13px"></div>
+                <div id="calcHistoryEmpty" style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">아직 계산 내역이 없어요</div>
               </div>
-              <div class="calc-history" id="calcHistory"></div>
             </div>
           </div>
         </div>
 
-        <!-- 부가세 계산기 -->
+        <!-- 부가세 계산기 — 3열 동시 표시 -->
         <div id="calcVatView" style="display:none">
-          <div style="max-width:420px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+
+            <!-- 공급가 → 합계 -->
             <div class="vat-box">
-              <div class="vat-header">부가세 계산기 (VAT 10%)</div>
+              <div class="vat-header" style="background:var(--accent2)">공급가 → 합계</div>
               <div class="vat-body">
-                <!-- 모드 탭 -->
-                <div class="vat-mode-tabs">
-                  <button class="vat-mode-btn active" id="vatMode1" onclick="switchVatMode('supply')">공급가 → 합계</button>
-                  <button class="vat-mode-btn" id="vatMode2" onclick="switchVatMode('total')">합계 → 공급가</button>
-                  <button class="vat-mode-btn" id="vatMode3" onclick="switchVatMode('qty')">합계 + 수량</button>
-                </div>
-
-                <!-- 공급가 → 합계 -->
-                <div id="vatSupplyView">
-                  <div class="vat-field">
-                    <label class="vat-label">공급가액</label>
-                    <div class="vat-input-wrap">
-                      <input class="vat-input" id="vatSupplyIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('supply')"/>
-                      <span class="vat-unit">원</span>
-                    </div>
+                <div class="vat-field">
+                  <label class="vat-label">공급가액 (VAT 제외)</label>
+                  <div class="vat-input-wrap">
+                    <input class="vat-input" id="vatSupplyIn" type="text" placeholder="0"
+                      oninput="formatVatInput(this)"
+                      onkeydown="if(event.key==='Enter')calcVat('supply')"/>
+                    <span class="vat-unit">원</span>
                   </div>
                 </div>
-
-                <!-- 합계 → 공급가 -->
-                <div id="vatTotalView" style="display:none">
-                  <div class="vat-field">
-                    <label class="vat-label">합계금액 (VAT 포함)</label>
-                    <div class="vat-input-wrap">
-                      <input class="vat-input" id="vatTotalIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('total')"/>
-                      <span class="vat-unit">원</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 합계 + 수량 -->
-                <div id="vatQtyView" style="display:none">
-                  <div class="vat-field">
-                    <label class="vat-label">전체 합계금액 (VAT 포함)</label>
-                    <div class="vat-input-wrap">
-                      <input class="vat-input" id="vatQtyTotalIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('qty')"/>
-                      <span class="vat-unit">원</span>
-                    </div>
-                  </div>
-                  <div class="vat-field">
-                    <label class="vat-label">수량</label>
-                    <div class="vat-input-wrap">
-                      <input class="vat-input" id="vatQtyIn" type="text" placeholder="1" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('qty')"/>
-                      <span class="vat-unit">개</span>
-                    </div>
-                  </div>
-                </div>
-
-                <button class="vat-calc-btn" onclick="calcVat(currentVatMode)">계산하기</button>
-
-                <!-- 결과 -->
-                <div class="vat-result" id="vatResult" style="display:none;margin-top:14px">
-                  <div id="vatResultRows"></div>
+                <button class="vat-calc-btn" onclick="calcVat('supply')">계산하기</button>
+                <div class="vat-result" id="vatResultSupply" style="display:none;margin-top:12px">
+                  <div id="vatRowsSupply"></div>
                 </div>
               </div>
             </div>
+
+            <!-- 합계 → 공급가 -->
+            <div class="vat-box">
+              <div class="vat-header" style="background:#1a6b3a">합계 → 공급가</div>
+              <div class="vat-body">
+                <div class="vat-field">
+                  <label class="vat-label">합계금액 (VAT 포함)</label>
+                  <div class="vat-input-wrap">
+                    <input class="vat-input" id="vatTotalIn" type="text" placeholder="0"
+                      oninput="formatVatInput(this)"
+                      onkeydown="if(event.key==='Enter')calcVat('total')"/>
+                    <span class="vat-unit">원</span>
+                  </div>
+                </div>
+                <button class="vat-calc-btn" style="background:#1a6b3a" onclick="calcVat('total')">계산하기</button>
+                <div class="vat-result" id="vatResultTotal" style="display:none;margin-top:12px">
+                  <div id="vatRowsTotal"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 합계 + 수량 -->
+            <div class="vat-box">
+              <div class="vat-header" style="background:#7B3FA0">합계 + 수량</div>
+              <div class="vat-body">
+                <div class="vat-field">
+                  <label class="vat-label">전체 합계금액 (VAT 포함)</label>
+                  <div class="vat-input-wrap">
+                    <input class="vat-input" id="vatQtyTotalIn" type="text" placeholder="0"
+                      oninput="formatVatInput(this)"
+                      onkeydown="if(event.key==='Enter')calcVat('qty')"/>
+                    <span class="vat-unit">원</span>
+                  </div>
+                </div>
+                <div class="vat-field">
+                  <label class="vat-label">수량</label>
+                  <div class="vat-input-wrap">
+                    <input class="vat-input" id="vatQtyIn" type="text" placeholder="1"
+                      oninput="formatVatInput(this)"
+                      onkeydown="if(event.key==='Enter')calcVat('qty')"/>
+                    <span class="vat-unit">개</span>
+                  </div>
+                </div>
+                <button class="vat-calc-btn" style="background:#7B3FA0" onclick="calcVat('qty')">계산하기</button>
+                <div class="vat-result" id="vatResultQty" style="display:none;margin-top:12px">
+                  <div id="vatRowsQty"></div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1825,9 +1847,13 @@ function calcEquals(silent=false){
   if(!silent){
     const expr=`${formatNum(calcPrev)} ${calcOper} ${formatNum(calcCurrent)} = ${formatNum(String(r))}`;
     calcHistoryList.unshift(expr);
-    if(calcHistoryList.length>5) calcHistoryList.pop();
+    if(calcHistoryList.length>10) calcHistoryList.pop();
     const hEl=document.getElementById('calcHistory');
-    if(hEl) hEl.innerHTML=calcHistoryList.map(h=>`<div class="calc-history-item">${h}</div>`).join('');
+    const emptyEl=document.getElementById('calcHistoryEmpty');
+    if(hEl){
+      hEl.innerHTML=calcHistoryList.map(h=>`<div class="calc-history-item">${h}</div>`).join('');
+      if(emptyEl) emptyEl.style.display='none';
+    }
   }
   document.getElementById('calcExpr').textContent=`${formatNum(calcPrev)} ${calcOper} ${formatNum(calcCurrent)} =`;
   calcCurrent=String(r); calcPrev=''; calcOper=''; calcShouldReset=true;
@@ -1868,14 +1894,7 @@ function switchCalcTab(tab){
 
 /* ── 부가세 계산기 ── */
 let currentVatMode='supply';
-function switchVatMode(mode){
-  currentVatMode=mode;
-  ['supply','total','qty'].forEach(m=>{
-    document.getElementById('vat'+m.charAt(0).toUpperCase()+m.slice(1)+'View').style.display = m===mode?'':'none';
-    document.getElementById('vatMode'+(m==='supply'?1:m==='total'?2:3)).className = 'vat-mode-btn'+(m===mode?' active':'');
-  });
-  document.getElementById('vatResult').style.display='none';
-}
+// switchVatMode removed - 3열 동시 표시로 변경
 
 function formatVatInput(el){
   const raw=el.value.replace(/[^0-9]/g,'');
@@ -1884,19 +1903,22 @@ function formatVatInput(el){
 function parseVatInput(id){ return parseInt(document.getElementById(id).value.replace(/[^0-9]/g,'')||'0'); }
 
 function calcVat(mode){
-  let rows='', show=true;
   if(mode==='supply'){
     const supply=parseVatInput('vatSupplyIn');
     if(!supply){ toast('공급가액을 입력해주세요','error'); return; }
     const vat=Math.round(supply*0.1);
     const total=supply+vat;
-    rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+    const rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+    document.getElementById('vatRowsSupply').innerHTML=rows;
+    document.getElementById('vatResultSupply').style.display='';
   } else if(mode==='total'){
     const total=parseVatInput('vatTotalIn');
     if(!total){ toast('합계금액을 입력해주세요','error'); return; }
     const supply=Math.round(total/1.1);
     const vat=total-supply;
-    rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+    const rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+    document.getElementById('vatRowsTotal').innerHTML=rows;
+    document.getElementById('vatResultTotal').style.display='';
   } else if(mode==='qty'){
     const grandTotal=parseVatInput('vatQtyTotalIn');
     const qty=parseVatInput('vatQtyIn')||1;
@@ -1904,16 +1926,14 @@ function calcVat(mode){
     const perTotal=Math.round(grandTotal/qty);
     const perSupply=Math.round(perTotal/1.1);
     const perVat=perTotal-perSupply;
-    rows=vatRow('전체 합계',grandTotal)
+    const rows=vatRow('전체 합계',grandTotal)
         +vatRow('수량',qty,'개')
         +vatRow('개당 합계',perTotal)
         +vatRow('개당 공급가액',perSupply)
         +vatRow('개당 부가세',perVat)
         +vatRowTotal('합계 검증',perTotal*qty);
-  }
-  if(show){
-    document.getElementById('vatResultRows').innerHTML=rows;
-    document.getElementById('vatResult').style.display='';
+    document.getElementById('vatRowsQty').innerHTML=rows;
+    document.getElementById('vatResultQty').style.display='';
   }
 }
 
