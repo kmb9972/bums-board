@@ -359,6 +359,149 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 .emergency-check label{font-size:13px;font-weight:700;color:#E53E3E;cursor:pointer}
 
 /* ══════════════════════════════════════
+   계산기
+══════════════════════════════════════ */
+.calc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+@media(max-width:700px){.calc-wrap{grid-template-columns:1fr}}
+
+/* 일반 계산기 */
+.calc-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+}
+.calc-screen{
+  background:var(--accent2);
+  padding:16px 18px;text-align:right;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.calc-expr{
+  font-size:12px;color:rgba(255,255,255,.5);
+  font-family:'Montserrat',sans-serif;min-height:18px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.calc-display{
+  font-size:32px;font-weight:700;color:#fff;
+  font-family:'Montserrat',sans-serif;
+  margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.calc-btns{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+}
+.calc-btn{
+  padding:16px 8px;font-size:15px;font-weight:600;
+  border:none;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:all .1s;background:var(--surface);
+  color:var(--text);
+}
+.calc-btn:hover{background:var(--accent-l);}
+.calc-btn:active{transform:scale(.95);}
+.calc-btn.op{color:var(--accent);font-weight:700;}
+.calc-btn.fn{background:var(--surface2);color:var(--text2);font-size:13px;}
+.calc-btn.fn:hover{background:var(--border);}
+.calc-btn.eq{
+  background:var(--accent);color:#fff;
+  grid-column:span 1;
+}
+.calc-btn.eq:hover{background:var(--accent2);}
+.calc-btn.zero{grid-column:span 2;}
+.calc-btn.clear{color:var(--accent-red,#E53E3E);font-weight:700;}
+.calc-history{
+  padding:10px 14px;max-height:80px;overflow-y:auto;
+  border-top:1px solid var(--border);
+  background:var(--surface2);
+}
+.calc-history-item{
+  font-size:11px;color:var(--text3);
+  font-family:'Montserrat',sans-serif;
+  padding:2px 0;border-bottom:1px solid var(--border);
+}
+.calc-history-item:last-child{border-bottom:none;}
+
+/* 부가세 계산기 */
+.vat-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+}
+.vat-header{
+  background:var(--accent2);padding:14px 18px;
+  font-size:13px;font-weight:700;color:#fff;
+}
+.vat-body{padding:18px;}
+.vat-field{margin-bottom:14px;}
+.vat-label{
+  font-size:11px;font-weight:700;color:var(--text3);
+  margin-bottom:5px;display:block;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.vat-input-wrap{
+  display:flex;align-items:center;
+  border:1.5px solid var(--border2);border-radius:var(--rs);
+  overflow:hidden;transition:border-color .15s;
+  background:var(--surface2);
+}
+.vat-input-wrap:focus-within{border-color:var(--accent);}
+.vat-input{
+  flex:1;padding:9px 12px;border:none;outline:none;
+  font-size:14px;font-weight:600;font-family:'Montserrat',sans-serif;
+  color:var(--text);background:transparent;text-align:right;
+}
+.vat-unit{
+  padding:9px 12px;font-size:12px;color:var(--text3);
+  background:var(--surface2);border-left:1px solid var(--border);
+  white-space:nowrap;font-weight:600;
+}
+.vat-mode-tabs{
+  display:flex;gap:4px;margin-bottom:16px;
+  background:var(--surface2);border-radius:var(--rs);
+  padding:4px;border:1px solid var(--border);
+}
+.vat-mode-btn{
+  flex:1;padding:6px;border:none;border-radius:6px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  color:var(--text3);background:transparent;transition:all .15s;
+}
+.vat-mode-btn.active{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 6px rgba(35,81,197,.25);
+}
+.vat-result{
+  background:var(--accent-l);border:1px solid var(--border2);
+  border-radius:var(--rs);padding:14px 16px;margin-top:4px;
+}
+.vat-result-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;
+}
+.vat-result-row:last-child{
+  border-bottom:none;margin-top:4px;padding-top:8px;
+  font-weight:700;font-size:14px;
+}
+.vat-result-label{color:var(--text3);}
+.vat-result-val{
+  font-family:'Montserrat',sans-serif;font-weight:700;color:var(--text);
+}
+.vat-result-val.accent{color:var(--accent);}
+.vat-calc-btn{
+  width:100%;padding:10px;margin-top:14px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--rs);
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:background .15s;
+}
+.vat-calc-btn:hover{background:var(--accent2);}
+.vat-copy-btn{
+  font-size:10px;padding:2px 7px;border-radius:4px;
+  border:1px solid var(--border2);background:var(--surface);
+  color:var(--text3);cursor:pointer;margin-left:6px;
+  font-family:'Noto Sans KR',sans-serif;transition:all .15s;
+}
+.vat-copy-btn:hover{background:var(--accent-l);color:var(--accent);}
+
+/* ══════════════════════════════════════
    캘린더
 ══════════════════════════════════════ */
 #cal-wrap .fc{font-family:'Noto Sans KR',sans-serif;font-size:12px}
@@ -374,6 +517,151 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 #cal-wrap .fc-day-today .fc-daygrid-day-number{color:var(--accent)!important;font-weight:900}
 #cal-wrap .fc-daygrid-day-number{color:var(--text2)}
 #cal-wrap .fc-event{font-size:10px!important;border-radius:4px!important;border:none!important;padding:1px 5px!important;cursor:pointer}
+
+/* ══════════════════════════════════════
+   계산기
+══════════════════════════════════════ */
+.calc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+@media(max-width:700px){.calc-wrap{grid-template-columns:1fr}}
+
+/* 일반 계산기 */
+.calc-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+}
+.calc-screen{
+  background:var(--accent2);
+  padding:16px 18px;text-align:right;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.calc-expr{
+  font-size:12px;color:rgba(255,255,255,.5);
+  font-family:'Montserrat',sans-serif;min-height:18px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.calc-display{
+  font-size:32px;font-weight:700;color:#fff;
+  font-family:'Montserrat',sans-serif;
+  margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.calc-btns{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+}
+.calc-btn{
+  padding:16px 8px;font-size:15px;font-weight:600;
+  border:none;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:all .1s;background:var(--surface);
+  color:var(--text);
+}
+.calc-btn:hover{background:var(--accent-l);}
+.calc-btn:active{transform:scale(.95);}
+.calc-btn.op{color:var(--accent);font-weight:700;}
+.calc-btn.fn{background:var(--surface2);color:var(--text2);font-size:13px;}
+.calc-btn.fn:hover{background:var(--border);}
+.calc-btn.eq{
+  background:var(--accent);color:#fff;
+  grid-column:span 1;
+}
+.calc-btn.eq:hover{background:var(--accent2);}
+.calc-btn.zero{grid-column:span 2;}
+.calc-btn.clear{color:var(--accent-red,#E53E3E);font-weight:700;}
+.calc-history{
+  padding:10px 14px;max-height:80px;overflow-y:auto;
+  border-top:1px solid var(--border);
+  background:var(--surface2);
+}
+.calc-history-item{
+  font-size:11px;color:var(--text3);
+  font-family:'Montserrat',sans-serif;
+  padding:2px 0;border-bottom:1px solid var(--border);
+}
+.calc-history-item:last-child{border-bottom:none;}
+
+/* 부가세 계산기 */
+.vat-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+}
+.vat-header{
+  background:var(--accent2);padding:14px 18px;
+  font-size:13px;font-weight:700;color:#fff;
+}
+.vat-body{padding:18px;}
+.vat-field{margin-bottom:14px;}
+.vat-label{
+  font-size:11px;font-weight:700;color:var(--text3);
+  margin-bottom:5px;display:block;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.vat-input-wrap{
+  display:flex;align-items:center;
+  border:1.5px solid var(--border2);border-radius:var(--rs);
+  overflow:hidden;transition:border-color .15s;
+  background:var(--surface2);
+}
+.vat-input-wrap:focus-within{border-color:var(--accent);}
+.vat-input{
+  flex:1;padding:9px 12px;border:none;outline:none;
+  font-size:14px;font-weight:600;font-family:'Montserrat',sans-serif;
+  color:var(--text);background:transparent;text-align:right;
+}
+.vat-unit{
+  padding:9px 12px;font-size:12px;color:var(--text3);
+  background:var(--surface2);border-left:1px solid var(--border);
+  white-space:nowrap;font-weight:600;
+}
+.vat-mode-tabs{
+  display:flex;gap:4px;margin-bottom:16px;
+  background:var(--surface2);border-radius:var(--rs);
+  padding:4px;border:1px solid var(--border);
+}
+.vat-mode-btn{
+  flex:1;padding:6px;border:none;border-radius:6px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  color:var(--text3);background:transparent;transition:all .15s;
+}
+.vat-mode-btn.active{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 6px rgba(35,81,197,.25);
+}
+.vat-result{
+  background:var(--accent-l);border:1px solid var(--border2);
+  border-radius:var(--rs);padding:14px 16px;margin-top:4px;
+}
+.vat-result-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;
+}
+.vat-result-row:last-child{
+  border-bottom:none;margin-top:4px;padding-top:8px;
+  font-weight:700;font-size:14px;
+}
+.vat-result-label{color:var(--text3);}
+.vat-result-val{
+  font-family:'Montserrat',sans-serif;font-weight:700;color:var(--text);
+}
+.vat-result-val.accent{color:var(--accent);}
+.vat-calc-btn{
+  width:100%;padding:10px;margin-top:14px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--rs);
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:background .15s;
+}
+.vat-calc-btn:hover{background:var(--accent2);}
+.vat-copy-btn{
+  font-size:10px;padding:2px 7px;border-radius:4px;
+  border:1px solid var(--border2);background:var(--surface);
+  color:var(--text3);cursor:pointer;margin-left:6px;
+  font-family:'Noto Sans KR',sans-serif;transition:all .15s;
+}
+.vat-copy-btn:hover{background:var(--accent-l);color:var(--accent);}
+
+
 </style>
 </head>
 <body>
@@ -399,6 +687,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
       <div class="nav-item" onclick="go('org')" id="nav-org">조직도 <span class="nav-badge" id="orgBadge" style="display:none"></span></div>
       <div class="nav-item" onclick="go('calendar')" id="nav-calendar">캘린더</div>
       <div class="nav-item" onclick="go('personal')" id="nav-personal">개인업무 <span class="nav-badge" id="persBadge" style="display:none"></span></div>
+      <div class="nav-item" onclick="go('calculator')" id="nav-calculator">계산기</div>
     </div>
     <div class="sidebar-foot">
       <div class="user-card">
@@ -472,6 +761,120 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
           <button class="btn btn-primary" onclick="addPers()" style="font-size:11px;padding:5px 10px;white-space:nowrap">추가</button>
         </div>
         <div id="persList"></div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- ══ 계산기 ══ -->
+    <div class="section" id="section-calculator">
+      <div class="page-header">
+        <div><div class="page-title">계산기</div><div class="page-sub">일반 계산기 · 부가세 계산기</div></div>
+      </div>
+      <div class="content">
+        <!-- 탭 -->
+        <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);border-radius:var(--rs);padding:4px;border:1px solid var(--border);width:fit-content">
+          <button class="vat-mode-btn active" id="calcTab1" onclick="switchCalcTab('basic')">일반 계산기</button>
+          <button class="vat-mode-btn" id="calcTab2" onclick="switchCalcTab('vat')">부가세 계산기</button>
+        </div>
+
+        <!-- 일반 계산기 -->
+        <div id="calcBasicView">
+          <div style="max-width:320px">
+            <div class="calc-box">
+              <div class="calc-screen">
+                <div class="calc-expr" id="calcExpr"></div>
+                <div class="calc-display" id="calcDisplay">0</div>
+              </div>
+              <div class="calc-btns">
+                <button class="calc-btn fn clear" onclick="calcClear()">AC</button>
+                <button class="calc-btn fn" onclick="calcToggleSign()">±</button>
+                <button class="calc-btn fn" onclick="calcPercent()">%</button>
+                <button class="calc-btn op" onclick="calcOp('÷')">÷</button>
+                <button class="calc-btn" onclick="calcNum('7')">7</button>
+                <button class="calc-btn" onclick="calcNum('8')">8</button>
+                <button class="calc-btn" onclick="calcNum('9')">9</button>
+                <button class="calc-btn op" onclick="calcOp('×')">×</button>
+                <button class="calc-btn" onclick="calcNum('4')">4</button>
+                <button class="calc-btn" onclick="calcNum('5')">5</button>
+                <button class="calc-btn" onclick="calcNum('6')">6</button>
+                <button class="calc-btn op" onclick="calcOp('-')">−</button>
+                <button class="calc-btn" onclick="calcNum('1')">1</button>
+                <button class="calc-btn" onclick="calcNum('2')">2</button>
+                <button class="calc-btn" onclick="calcNum('3')">3</button>
+                <button class="calc-btn op" onclick="calcOp('+')">+</button>
+                <button class="calc-btn zero" onclick="calcNum('0')">0</button>
+                <button class="calc-btn" onclick="calcDot()">.</button>
+                <button class="calc-btn eq" onclick="calcEquals()">=</button>
+              </div>
+              <div class="calc-history" id="calcHistory"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 부가세 계산기 -->
+        <div id="calcVatView" style="display:none">
+          <div style="max-width:420px">
+            <div class="vat-box">
+              <div class="vat-header">부가세 계산기 (VAT 10%)</div>
+              <div class="vat-body">
+                <!-- 모드 탭 -->
+                <div class="vat-mode-tabs">
+                  <button class="vat-mode-btn active" id="vatMode1" onclick="switchVatMode('supply')">공급가 → 합계</button>
+                  <button class="vat-mode-btn" id="vatMode2" onclick="switchVatMode('total')">합계 → 공급가</button>
+                  <button class="vat-mode-btn" id="vatMode3" onclick="switchVatMode('qty')">합계 + 수량</button>
+                </div>
+
+                <!-- 공급가 → 합계 -->
+                <div id="vatSupplyView">
+                  <div class="vat-field">
+                    <label class="vat-label">공급가액</label>
+                    <div class="vat-input-wrap">
+                      <input class="vat-input" id="vatSupplyIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('supply')"/>
+                      <span class="vat-unit">원</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 합계 → 공급가 -->
+                <div id="vatTotalView" style="display:none">
+                  <div class="vat-field">
+                    <label class="vat-label">합계금액 (VAT 포함)</label>
+                    <div class="vat-input-wrap">
+                      <input class="vat-input" id="vatTotalIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('total')"/>
+                      <span class="vat-unit">원</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 합계 + 수량 -->
+                <div id="vatQtyView" style="display:none">
+                  <div class="vat-field">
+                    <label class="vat-label">전체 합계금액 (VAT 포함)</label>
+                    <div class="vat-input-wrap">
+                      <input class="vat-input" id="vatQtyTotalIn" type="text" placeholder="0" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('qty')"/>
+                      <span class="vat-unit">원</span>
+                    </div>
+                  </div>
+                  <div class="vat-field">
+                    <label class="vat-label">수량</label>
+                    <div class="vat-input-wrap">
+                      <input class="vat-input" id="vatQtyIn" type="text" placeholder="1" oninput="formatVatInput(this)" onkeydown="if(event.key==='Enter')calcVat('qty')"/>
+                      <span class="vat-unit">개</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="vat-calc-btn" onclick="calcVat(currentVatMode)">계산하기</button>
+
+                <!-- 결과 -->
+                <div class="vat-result" id="vatResult" style="display:none;margin-top:14px">
+                  <div id="vatResultRows"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -819,6 +1222,7 @@ function go(s){
   if(s==='org')renderOrg();
   if(s==='calendar')renderCal();
   if(s==='personal')renderPers();
+  if(s==='calculator'){ calcClear(); }
   updateBadges();
 }
 
@@ -1376,6 +1780,164 @@ function toast(msg,type='info'){
   const el=document.createElement('div');el.className=`toast ${type}`;
   el.innerHTML=`<span>${msg}</span>`;w.appendChild(el);
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},2800);
+}
+
+/* ══════════════════════════════════════
+   계산기 JS
+══════════════════════════════════════ */
+
+/* ── 일반 계산기 ── */
+let calcCurrent='0', calcPrev='', calcOper='', calcShouldReset=false;
+const calcHistoryList=[];
+
+function calcDisplay(){ document.getElementById('calcDisplay').textContent=formatNum(calcCurrent); }
+function calcExprDisplay(){ document.getElementById('calcExpr').textContent=calcPrev?(formatNum(calcPrev)+' '+calcOper):''; }
+function formatNum(v){
+  const n=parseFloat(v);
+  if(isNaN(n)) return v;
+  return n.toLocaleString('ko-KR',{maximumFractionDigits:10});
+}
+
+function calcNum(n){
+  if(calcShouldReset){ calcCurrent=n; calcShouldReset=false; }
+  else calcCurrent = calcCurrent==='0' ? n : calcCurrent+n;
+  calcDisplay();
+}
+function calcDot(){
+  if(calcShouldReset){ calcCurrent="0."; calcShouldReset=false; }
+  else if(!calcCurrent.includes(".")) calcCurrent+=".";
+  calcDisplay();
+}
+function calcOp(op){
+  if(calcOper&&!calcShouldReset) calcEquals(true);
+  calcPrev=calcCurrent; calcOper=op; calcShouldReset=true;
+  calcExprDisplay();
+}
+function calcEquals(silent=false){
+  if(!calcOper||!calcPrev) return;
+  const a=parseFloat(calcPrev), b=parseFloat(calcCurrent);
+  let r;
+  if(calcOper==='÷') r = b===0?'오류':a/b;
+  else if(calcOper==='×') r=a*b;
+  else if(calcOper==='+') r=a+b;
+  else if(calcOper==='-') r=a-b;
+  else return;
+  if(!silent){
+    const expr=`${formatNum(calcPrev)} ${calcOper} ${formatNum(calcCurrent)} = ${formatNum(String(r))}`;
+    calcHistoryList.unshift(expr);
+    if(calcHistoryList.length>5) calcHistoryList.pop();
+    const hEl=document.getElementById('calcHistory');
+    if(hEl) hEl.innerHTML=calcHistoryList.map(h=>`<div class="calc-history-item">${h}</div>`).join('');
+  }
+  document.getElementById('calcExpr').textContent=`${formatNum(calcPrev)} ${calcOper} ${formatNum(calcCurrent)} =`;
+  calcCurrent=String(r); calcPrev=''; calcOper=''; calcShouldReset=true;
+  calcDisplay();
+}
+function calcClear(){ calcCurrent='0'; calcPrev=''; calcOper=''; calcShouldReset=false; calcDisplay(); calcExprDisplay(); }
+function calcToggleSign(){ calcCurrent=String(-parseFloat(calcCurrent)||0); calcDisplay(); }
+function calcPercent(){ calcCurrent=String(parseFloat(calcCurrent)/100); calcDisplay(); }
+
+// 키보드 지원
+document.addEventListener('keydown', e=>{
+  if(cur!=='calculator') return;
+  if(document.activeElement.tagName==='INPUT') return;
+  const k=e.key;
+  if(k>='0'&&k<='9') calcNum(k);
+  else if(k===".") calcDot();
+  else if(k==='Enter'||k==='=') calcEquals();
+  else if(k==='+') calcOp('+');
+  else if(k==='-') calcOp('-');
+  else if(k==='*') calcOp('×');
+  else if(k==='/') { e.preventDefault(); calcOp('÷'); }
+  else if(k==='%') calcPercent();
+  else if(k==='Backspace'){
+    if(calcCurrent.length>1) calcCurrent=calcCurrent.slice(0,-1);
+    else calcCurrent='0';
+    calcDisplay();
+  }
+  else if(k==='Escape') calcClear();
+});
+
+/* ── 계산기 탭 전환 ── */
+function switchCalcTab(tab){
+  document.getElementById('calcBasicView').style.display = tab==='basic'?'':'none';
+  document.getElementById('calcVatView').style.display   = tab==='vat'?'':'none';
+  document.getElementById('calcTab1').className = 'vat-mode-btn'+(tab==='basic'?' active':'');
+  document.getElementById('calcTab2').className = 'vat-mode-btn'+(tab==='vat'?' active':'');
+}
+
+/* ── 부가세 계산기 ── */
+let currentVatMode='supply';
+function switchVatMode(mode){
+  currentVatMode=mode;
+  ['supply','total','qty'].forEach(m=>{
+    document.getElementById('vat'+m.charAt(0).toUpperCase()+m.slice(1)+'View').style.display = m===mode?'':'none';
+    document.getElementById('vatMode'+(m==='supply'?1:m==='total'?2:3)).className = 'vat-mode-btn'+(m===mode?' active':'');
+  });
+  document.getElementById('vatResult').style.display='none';
+}
+
+function formatVatInput(el){
+  const raw=el.value.replace(/[^0-9]/g,'');
+  el.value=raw?parseInt(raw).toLocaleString('ko-KR'):'';
+}
+function parseVatInput(id){ return parseInt(document.getElementById(id).value.replace(/[^0-9]/g,'')||'0'); }
+
+function calcVat(mode){
+  let rows='', show=true;
+  if(mode==='supply'){
+    const supply=parseVatInput('vatSupplyIn');
+    if(!supply){ toast('공급가액을 입력해주세요','error'); return; }
+    const vat=Math.round(supply*0.1);
+    const total=supply+vat;
+    rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+  } else if(mode==='total'){
+    const total=parseVatInput('vatTotalIn');
+    if(!total){ toast('합계금액을 입력해주세요','error'); return; }
+    const supply=Math.round(total/1.1);
+    const vat=total-supply;
+    rows=vatRow('공급가액',supply)+vatRow('부가세 (10%)',vat)+vatRowTotal('합계',total);
+  } else if(mode==='qty'){
+    const grandTotal=parseVatInput('vatQtyTotalIn');
+    const qty=parseVatInput('vatQtyIn')||1;
+    if(!grandTotal){ toast('전체 합계금액을 입력해주세요','error'); return; }
+    const perTotal=Math.round(grandTotal/qty);
+    const perSupply=Math.round(perTotal/1.1);
+    const perVat=perTotal-perSupply;
+    rows=vatRow('전체 합계',grandTotal)
+        +vatRow('수량',qty,'개')
+        +vatRow('개당 합계',perTotal)
+        +vatRow('개당 공급가액',perSupply)
+        +vatRow('개당 부가세',perVat)
+        +vatRowTotal('합계 검증',perTotal*qty);
+  }
+  if(show){
+    document.getElementById('vatResultRows').innerHTML=rows;
+    document.getElementById('vatResult').style.display='';
+  }
+}
+
+function vatRow(label, val, unit='원'){
+  const fv = unit==='원' ? val.toLocaleString('ko-KR')+'원' : val.toLocaleString('ko-KR')+unit;
+  return `<div class="vat-result-row">
+    <span class="vat-result-label">${label}</span>
+    <div style="display:flex;align-items:center;gap:4px">
+      <span class="vat-result-val">${fv}</span>
+      ${unit==='원'?`<button class="vat-copy-btn" onclick="copyVal('${val.toLocaleString('ko-KR')}')">복사</button>`:''}
+    </div>
+  </div>`;
+}
+function vatRowTotal(label, val){
+  return `<div class="vat-result-row">
+    <span class="vat-result-label">${label}</span>
+    <div style="display:flex;align-items:center;gap:4px">
+      <span class="vat-result-val accent">${val.toLocaleString('ko-KR')}원</span>
+      <button class="vat-copy-btn" onclick="copyVal('${val.toLocaleString('ko-KR')}')">복사</button>
+    </div>
+  </div>`;
+}
+function copyVal(v){
+  navigator.clipboard.writeText(v).then(()=>toast('복사됨!','success'));
 }
 
 /* ══════════════════════════════════════
