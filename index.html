@@ -1273,6 +1273,10 @@ DB_REF.on('value', (snapshot) => {
   const data = snapshot.val();
   if(data) {
     db = data;
+    // tasks가 배열이 아닌 객체로 저장될 수 있어서 변환
+    if(db.tasks && !Array.isArray(db.tasks)) {
+      db.tasks = Object.values(db.tasks);
+    }
   } else {
     db = {tasks:[]};
   }
@@ -1280,7 +1284,7 @@ DB_REF.on('value', (snapshot) => {
   if(typeof cur !== 'undefined') {
     if(cur==='dashboard') renderDash();
     if(cur==='org') renderOrg();
-    if(cur==='calendar' && calInst) renderCal();
+    if(cur==='calendar') renderCal(); // calInst 조건 제거 - 항상 전체 재렌더링
     if(cur==='personal') renderPers();
     updateBadges();
     if(typeof renderTaskTable === 'function') renderTaskTable();
@@ -1289,6 +1293,10 @@ DB_REF.on('value', (snapshot) => {
 
 // Firebase에 저장
 function save(){
+  // tasks를 항상 배열로 보장
+  if(db.tasks && !Array.isArray(db.tasks)){
+    db.tasks = Object.values(db.tasks);
+  }
   DB_REF.set(db);
 }
 function ds(o=0){const d=new Date();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10);}
