@@ -4,6 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>BEOM WORK BOARD</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.js"></script>
@@ -1248,9 +1251,46 @@ const financeDates=[
 /* ══════════════════════════════════════
    DB
 ══════════════════════════════════════ */
-const KEY='bwb_v3';
-let db=(()=>{try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{tasks:[]};})();
-function save(){localStorage.setItem(KEY,JSON.stringify(db));}
+// Firebase 초기화
+const firebaseConfig = {
+  apiKey: "AIzaSyDQOxDc5xuG97QnS1MWrHMEj53d7xcoitU",
+  authDomain: "bum-s-borad.firebaseapp.com",
+  databaseURL: "https://bum-s-borad-default-rtdb.firebaseio.com",
+  projectId: "bum-s-borad",
+  storageBucket: "bum-s-borad.firebasestorage.app",
+  messagingSenderId: "1023841574991",
+  appId: "1:1023841574991:web:4672301a765320a35dca3a"
+};
+firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
+const DB_REF = fbDb.ref('bwb_v3');
+
+// 로컬 DB
+let db = {tasks:[]};
+
+// Firebase에서 데이터 로드 (실시간 동기화)
+DB_REF.on('value', (snapshot) => {
+  const data = snapshot.val();
+  if(data) {
+    db = data;
+  } else {
+    db = {tasks:[]};
+  }
+  // 현재 화면 새로고침
+  if(typeof cur !== 'undefined') {
+    if(cur==='dashboard') renderDash();
+    if(cur==='org') renderOrg();
+    if(cur==='calendar' && calInst) renderCal();
+    if(cur==='personal') renderPers();
+    updateBadges();
+    if(typeof renderTaskTable === 'function') renderTaskTable();
+  }
+});
+
+// Firebase에 저장
+function save(){
+  DB_REF.set(db);
+}
 function ds(o=0){const d=new Date();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10);}
 function uid(){return Math.random().toString(36).slice(2,9);}
 function dateToStr(d){return d.toISOString().slice(0,10);}
