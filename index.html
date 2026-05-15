@@ -998,6 +998,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
   </div>
 </div>
 
+<!-- ══ 삭제 확인 모달 ══ -->
+<div class="edit-overlay" id="confirmModal" style="display:none;z-index:700" onclick="closeConfirmModal(event)">
+  <div class="edit-box" style="width:380px;max-width:95vw" onclick="event.stopPropagation()">
+    <div class="edit-head" style="background:linear-gradient(135deg,#E53E3E,#C53030)">
+      <span class="modal-title">업무 삭제</span>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div style="padding:24px 20px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">정말 삭제하시겠어요?</div>
+        <div style="font-size:13px;color:var(--text3);line-height:1.6">
+          <span id="confirmTaskName" style="font-weight:700;color:#E53E3E"></span><br>
+          삭제하면 복구할 수 없어요.
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-ghost" onclick="closeConfirmModal()" style="flex:1;padding:10px">취소</button>
+        <button class="btn" onclick="confirmDelete()" style="flex:1;padding:10px;background:#E53E3E;color:#fff;border-color:#C53030">삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 업무 상세/수정 모달 ══ -->
 <div class="edit-overlay" id="editModal" style="display:none" onclick="closeEditModal(event)">
   <div class="edit-box" onclick="event.stopPropagation()">
@@ -1054,9 +1078,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
           <label for="editEmergency">🚨 긴급 업무 (최우선순위 — 빨강 강조)</label>
         </div>
       </div>
-      <div class="edit-foot">
-        <button class="btn btn-ghost" onclick="document.getElementById('editModal').style.display='none'">취소</button>
-        <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+      <div class="edit-foot" style="justify-content:space-between">
+        <button class="btn" onclick="openConfirmDelete()" style="background:#fff0f0;color:#E53E3E;border-color:#fca5a5">삭제</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="document.getElementById('editModal').style.display='none'">취소</button>
+          <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1835,6 +1862,36 @@ function saveEdit(){
   else if(editCtx==='calendar'){if(calInst)renderCal();}
   if(cur==='calendar')renderCal();
   updateBadges();
+}
+
+/* ══════════════════════════════════════
+   삭제 확인 모달
+══════════════════════════════════════ */
+function openConfirmDelete(){
+  const t=db.tasks.find(x=>x.id===editId);
+  if(!t) return;
+  document.getElementById('confirmTaskName').textContent=`"${t.text}"`;
+  document.getElementById('confirmModal').style.display='flex';
+}
+function closeConfirmModal(e){
+  if(!e||e.target===document.getElementById('confirmModal')){
+    document.getElementById('confirmModal').style.display='none';
+  }
+}
+function confirmDelete(){
+  if(!editId) return;
+  delT(editId);
+  document.getElementById('confirmModal').style.display='none';
+  document.getElementById('editModal').style.display='none';
+  toast('업무가 삭제됐어요','success');
+  // 현재 화면 새로고침
+  if(editCtx==='dash'||editCtx==='calendar') renderDash();
+  if(editCtx==='modal'){ renderMList(); if(cur==='org') renderOrg(); }
+  if(editCtx==='pers') renderPers();
+  if(cur==='calendar') renderCal();
+  if(cur==='dashboard') renderDash();
+  updateBadges();
+  if(typeof renderTaskTable==='function') renderTaskTable();
 }
 
 /* ══════════════════════════════════════
