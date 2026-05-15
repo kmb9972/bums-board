@@ -787,7 +787,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
         <!-- D-DAY -->
         <div class="dday-grid" id="ddayGrid"></div>
         <!-- 통계 -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px" id="statCards"></div>
+        <!-- 상단 통계: 전체/완료 숫자 + 긴급/지연 목록 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:18px" id="statCards"></div>
         <!-- 업무 요청 현황 테이블 -->
         <div class="card" style="margin-bottom:18px">
           <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.03em">업무 요청 현황</div>
@@ -1411,19 +1412,45 @@ function renderDash(){
   // 통계 카드
   const total=db.tasks.length;
   const done=db.tasks.filter(t=>t.done).length;
-  const overdue=db.tasks.filter(t=>!t.done&&t.date<today).length;
-  const emergency=db.tasks.filter(t=>!t.done&&t.emergency).length;
-  document.getElementById('statCards').innerHTML=[
-    {l:'전체 요청',v:total,c:'var(--accent)',s:'등록된 모든 업무 요청'},
-    {l:'완료',v:done,c:'#38A169',s:`완료율 ${total?Math.round(done/total*100):0}%`},
-    {l:'지연',v:overdue,c:'#E53E3E',s:'기한 초과 요청'},
-    {l:'긴급',v:emergency,c:'#FC4545',s:'최우선순위 업무'},
-  ].map((s,i)=>`
-    <div class="card" style="border-top-color:${s.c}">
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em">${s.l}</div>
-      <div class="stat-val" style="color:${s.c}">${s.v}</div>
-      <div class="stat-sub">${s.s}</div>
-    </div>`).join('');
+  const overdueTasks=db.tasks.filter(t=>!t.done&&t.date<today);
+  const emergencyTasks=db.tasks.filter(t=>!t.done&&t.emergency);
+
+  // 긴급/지연 목록 렌더링 (D-DAY 스타일)
+  function statTaskItem(t){
+    const m=findEntity(t.mid);
+    return `<div class="dday-task${t.emergency?' emergency':''}" onclick="openEdit('${t.id}','dash')" style="margin-bottom:4px">
+      <span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.text}</span>
+      <span style="font-size:10px;color:var(--text3);flex-shrink:0;margin-left:4px">${m?m.name:''}</span>
+    </div>`;
+  }
+
+  document.getElementById('statCards').innerHTML=`
+    <!-- 전체 요청 숫자 카드 -->
+    <div class="card" style="border-top-color:var(--accent)">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em">전체 요청</div>
+      <div class="stat-val" style="color:var(--accent)">${total}</div>
+      <div class="stat-sub">등록된 모든 업무 요청</div>
+    </div>
+    <!-- 완료 숫자 카드 -->
+    <div class="card" style="border-top-color:#38A169">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em">완료</div>
+      <div class="stat-val" style="color:#38A169">${done}</div>
+      <div class="stat-sub">완료율 ${total?Math.round(done/total*100):0}%</div>
+    </div>
+    <!-- 긴급 목록 카드 -->
+    <div class="dday-card" style="border:1px solid var(--border);border-top:3px solid #FC4545;border-radius:var(--r);box-shadow:var(--shadow)">
+      <span class="dday-label d0" style="background:#FC4545">🚨 긴급</span>
+      ${emergencyTasks.length===0
+        ? '<div class="dday-empty">긴급 업무 없음</div>'
+        : emergencyTasks.map(t=>statTaskItem(t)).join('')}
+    </div>
+    <!-- 지연 목록 카드 -->
+    <div class="dday-card" style="border:1px solid var(--border);border-top:3px solid #E53E3E;border-radius:var(--r);box-shadow:var(--shadow)">
+      <span class="dday-label d1" style="background:#E53E3E">⚠️ 지연</span>
+      ${overdueTasks.length===0
+        ? '<div class="dday-empty">지연 업무 없음</div>'
+        : overdueTasks.map(t=>statTaskItem(t)).join('')}
+    </div>`;
 
   // 업무 요청 현황 테이블
   renderTaskTable();
