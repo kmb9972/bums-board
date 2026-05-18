@@ -1518,9 +1518,9 @@ function renderTaskTable(){
     return t.startDate&&t.startDate!==t.date?t.startDate+' ~ '+t.date:t.date;
   }
 
-  // 담당자별 그룹핑
+  // 담당자별 그룹핑 - 미완료 업무만
   const groups={};
-  db.tasks.forEach(t=>{
+  db.tasks.filter(t=>!t.done).forEach(t=>{
     if(!groups[t.mid]) groups[t.mid]=[];
     groups[t.mid].push(t);
   });
@@ -1546,15 +1546,12 @@ function renderTaskTable(){
     const rows=tasks.map(t=>{
       const dc=dateClass(t.date,t.done);
       const isEmg=t.emergency&&!t.done;
-      return `<div class="req-row${isEmg?' emergency-row':''}${t.done?' done-row':''}">
-        <input type="checkbox" class="req-check" ${t.done?'checked':''}
-          onchange="toggleT('${t.id}');renderTaskTable();updateBadges();">
+      return `<div class="req-row${isEmg?' emergency-row':''}">
         ${isEmg?'<span style="font-size:10px;background:#E53E3E;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0">긴급</span>':''}
-        ${t.color&&!t.emergency?`<span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block;flex-shrink:0"></span>`:''}
+        ${t.color?`<span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block;flex-shrink:0"></span>`:''}
         <span class="req-row-text">${t.text}${t.memo?` <span title="${t.memo}" style="color:var(--text3);cursor:help">📝</span>`:''}</span>
         <span class="req-row-date ${dc}">${dateLabel(t)}</span>
         <button class="task-edit" onclick="openEdit('${t.id}','dash')" title="수정">✎</button>
-        <button class="task-del" onclick="delT('${t.id}');renderTaskTable();updateBadges();">✕</button>
       </div>`;
     }).join('');
 
